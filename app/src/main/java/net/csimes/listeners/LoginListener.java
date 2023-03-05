@@ -20,9 +20,9 @@ import net.csimes.listeners.*;
 
 
 public class LoginListener implements DocumentListener, ActionListener {
-	private RegisterPage rp;
+	private LoginPage rp;
 	
-	public LoginListener(RegisterPage rp) {
+	public LoginListener(LoginPage rp) {
 		this.rp = rp;
 	}
 	
@@ -51,11 +51,11 @@ public class LoginListener implements DocumentListener, ActionListener {
 				String path = Initialize.rootAccPath;
 				WriteAccount.write(acc, path);
 				
-				this.rp.root.getContentPane().removeAll();
-				this.rp.root.revalidate();
-				this.rp.root.repaint();
+				this.rp.page.getContentPane().removeAll();
+				this.rp.page.revalidate();
+				this.rp.page.repaint();
 				
-				new LoginPage(this.rp);
+				new LoginPage(Initialize.pages.get("MAIN"));
 			}
 		}   
 	}

@@ -2,7 +2,11 @@ icons/acc_checked.png
 icons/acc_normal.png
 icons/acc_wrong.png
 icons/csimes_full.png
+icons/csimes_full_bg.png
+icons/csimes_full_cropped.png
 icons/csimes_logo.png
+icons/csimes_logo_bg.png
+icons/csimes_logo_bg_cropped.png
 icons/csimes_logo_selected.png
 icons/csimes_mainsplash.png
 icons/minimize_clicked.png
@@ -14,6 +18,7 @@ icons/pass_wrong.png
 icons/splash_1.png
 icons/splash_2.png
 icons/splash_3.png
+icons/splash_4.png
 icons/x.png
 icons/x_clicked.png
 icons/x_selected.png
