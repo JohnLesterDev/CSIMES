@@ -21,6 +21,7 @@ import net.csimes.listeners.*;
 
 public class RegisterListener implements DocumentListener, ActionListener {
 	private RegisterPage rp;
+	private boolean userV = true;
 	
 	public RegisterListener(RegisterPage rp) {
 		this.rp = rp;
@@ -30,14 +31,14 @@ public class RegisterListener implements DocumentListener, ActionListener {
 		JTextField txt = (JTextField) e.getSource();
 		
 		if (txt.getName().equals("usernamefield")) {
-			if (!txt.getText().equals("")) {
+			if (!txt.getText().equals("") && userV) {
 				txt.transferFocus();
 			}
 		} else {
 			JTextField usrF = (JTextField) rp.components.get("usernamefield");
 			JPasswordField passF = (JPasswordField) e.getSource();
 			
-			if (!String.valueOf(passF.getPassword()).equals("")) {
+			if (!String.valueOf(passF.getPassword()).equals("") && userV) {
 				this.rp.root.clean();
 				this.rp.root.setVisible(false);
 				
@@ -76,18 +77,36 @@ public class RegisterListener implements DocumentListener, ActionListener {
 					Initialize.LockFile(true);
 					System.exit(0);
 				}
-				
-				
 			}
 		}   
 	}
 	
 	public void insertUpdate(DocumentEvent e) {
+		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
 		
+		if (textField.getName().equals("usernamefield")) {
+			if (LoginPage.accounts.containsKey(textField.getText())) {
+				((JLabel) rp.components.get("Error")).setText("Error: Username already taken.");
+				this.userV = false;
+			} else {
+				((JLabel) rp.components.get("Error")).setText("");
+				this.userV = true;
+			}
+		}
 	}
 	
 	public void removeUpdate(DocumentEvent e) {
+		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
 		
+		if (textField.getName().equals("usernamefield")) {
+			if (LoginPage.accounts.containsKey(textField.getText())) {
+				((JLabel) rp.components.get("Error")).setText("Error: Username already taken.");
+				this.userV = false;
+			} else {
+				((JLabel) rp.components.get("Error")).setText("");
+				this.userV = true;
+			}
+		}
 	}
 	
 	@Override

@@ -1,8 +1,10 @@
 package net.csimes.page;
 
+import java.io.*;
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
+import java.nio.file.*;
 import java.awt.event.*;
 import javax.swing.text.*;
 
@@ -36,6 +38,24 @@ public class RegisterPage {
 		
 		if (isText == true) {
 			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.white);
+		}
+		
+		this.root.add(label);
+		this.components.put(label.getName(), label);
+		
+		return label;
+	}
+	
+	public JLabel createTextLabel(boolean isText, String name, int fontSize, Rectangle labelRect, boolean err) {
+		JLabel label = new JLabel();
+		label.setName(name);
+		
+		label.setBounds(labelRect);
+		
+		if (isText == true) {
+			label.setText("");
 			label.setFont(new Font("Arial", Font.BOLD, fontSize));
 			label.setForeground(Color.white);
 		}
@@ -135,6 +155,12 @@ public class RegisterPage {
 		int passY = (int) (((float) this.rootHeight) / 2) - (int) (((float) this.rootHeight) * 0.04);
 		int passFont = (int) (((float) this.rootHeight) * 0.05);
 		
+		// Error rect
+		int errX = (int) (((float) this.rootWidth) * 0.22);
+		int errW = (int) (((float) this.rootWidth) * 0.6);
+		int errH = (int) (((float) this.rootHeight) * 0.08);
+		int errY = (int) (((float) this.rootHeight) / 2) + (passH / 2) + (passH / 3);
+		int errFont = (int) (((float) this.rootHeight) * 0.045); //+ (int) (((float) this.rootHeight) * 0.03);
 		
 		// Username field rect
 		int fusrX = usrX + usrW - (int) (((float) usrX) * 0.41);
@@ -156,6 +182,7 @@ public class RegisterPage {
 		
 		JLabel username = this.createTextLabel(true, "Username:", usrFont, new Rectangle(usrX, usrY, usrW, usrH));
 		JLabel passwd = this.createTextLabel(true, "Password:", passFont, new Rectangle(passX, passY, passW, passH));
+		JLabel err_ = this.createTextLabel(true, "Error", errFont, new Rectangle(errX, errY, errW, errH), true);
 		username.setToolTipText("Username Label :>");
 		passwd.setToolTipText("Password Label :>");
 		
@@ -198,6 +225,12 @@ public class RegisterPage {
 								"Cancel"
 					);
 					if (stat_ == 0) {
+						try {
+							Files.delete(Initialize.firstUser.toPath());
+						} catch (IOException e) {
+							e.printStackTrace();
+						};  
+						
 						JFrame root = (JFrame) we.getSource();
 						root.dispose();
 				}
@@ -211,7 +244,7 @@ public class RegisterPage {
 		this.root.setSize(rootWidth, rootHeight);
 		this.root.setTitle("CSIMES - Register");
 		this.root.setLayout(null);
-		this.root.setResizable(false);
+		this.root.setResizable(true);
 		this.root.setIconImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_cropped.png")).getImage());
 		
 		this.root.setLocationRelativeTo(null);

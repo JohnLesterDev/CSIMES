@@ -44,7 +44,7 @@ jar {
         attributes 'Main-Class': 'net.csimes.App'
     }
     
-    archiveFileName.set('Csimes-1.5.jar')
+    archiveFileName.set('Csimes-0.5.2.jar')
     
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
