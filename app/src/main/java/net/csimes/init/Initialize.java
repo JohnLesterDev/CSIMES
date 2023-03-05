@@ -1,9 +1,11 @@
 package net.csimes.init;
 
 import java.io.*;
+import java.nio.*;
 import java.net.*;
 import java.util.*;
 import javax.swing.*;
+import java.nio.file.*;
 
 import net.csimes.io.*;
 import net.csimes.exc.*;
@@ -23,6 +25,7 @@ public class Initialize {
 	private static String rootDir = Initialize.getRootPartition() + File.separator + "CSIMES";
 	public static String rootAccPath = Initialize.rootDir + File.separator + "ACC";
 	public static File accountStat = new File(Initialize.rootDir + File.separator + "ACC");
+	public static File firstUser = new File(Initialize.rootDir + File.separator + "TRUE");
 	
 	public static HashMap<String,Page> pages = Initialize.createPages(new String[]{"MAIN", "credentials", "popup", "free1", "free2", "free3"});	
 	public static HashMap<String,ImageIcon> icons = Initialize.loadIcons();
@@ -125,12 +128,10 @@ public class Initialize {
 	}
 	
 	public void createCoreFiles() {
-		File firstUser = new File(Initialize.rootDir + File.separator + "TRUE");
-
 		Initialize.accountStat.mkdirs();
 			
 		try {
-			firstUser.createNewFile();
+			Initialize.firstUser.createNewFile();
 		} catch (IOException e) {
 			e.printStackTrace();
 		};  
@@ -162,7 +163,7 @@ public class Initialize {
 			lp.page.setVisible(true);
 		}else{		
 			this.createCoreFiles();
-			
+			rp = new RegisterPage(pages.get("credentials"));
 			rp.root.setVisible(true);
 			String msg_ = "First time user detected. Create an Owner account?";
 			int stat_ = JOptionPane.showConfirmDialog(null,
@@ -172,12 +173,21 @@ public class Initialize {
 						JOptionPane.QUESTION_MESSAGE,
 						new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
 						);
+			rp.root.revalidate();
+			rp.root.repaint();
 			rp.paints();
 			if ((stat_ == 1) || (stat_ == -1)) {
+				try {
+					Files.delete(Initialize.firstUser.toPath());
+				} catch (IOException e) {
+					e.printStackTrace();
+				};  
+				
 				Initialize.LockFile(true);
 				System.exit(0);
 			}
 			
+			rp.root.revalidate();
 			rp.root.repaint();
 			rp.tf.requestFocus();
 		}
