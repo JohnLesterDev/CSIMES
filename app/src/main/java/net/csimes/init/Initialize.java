@@ -18,10 +18,11 @@ import net.csimes.splash.*;
 
 
 public class Initialize {
+	private static String lockFilePath = System.getProperty("java.io.tmpdir");
 	private static String rootPartition = System.getenv("SystemDrive");
 	private static String rootDir = Initialize.getRootPartition() + File.separator + "CSIMES";
 	public static String rootAccPath = Initialize.rootDir + File.separator + "ACC";
-	private static File accountStat = new File(Initialize.rootDir + File.separator + "ACC");
+	public static File accountStat = new File(Initialize.rootDir + File.separator + "ACC");
 	
 	public static HashMap<String,Page> pages = Initialize.createPages(new String[]{"MAIN", "credentials", "popup", "free1", "free2"});	
 	public static HashMap<String,ImageIcon> icons = Initialize.loadIcons();
@@ -39,6 +40,36 @@ public class Initialize {
 			isInternet = false;
 		}catch (IOException e) {
 			isInternet = false;
+		}
+	}
+	
+	public static void LockFile(Runnable r, Runnable error) {
+		File lockfile = new File(Initialize.lockFilePath, "csimes-inventory.lock");
+		
+		try {
+			if (!lockfile.createNewFile()) {
+				error.run();
+				return;
+				// System.exit(0);
+			}
+			
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				Initialize.LockFile(true);
+			}));
+			
+			r.run();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void LockFile(boolean locked) {
+		File lockfile = new File(Initialize.lockFilePath, "csimes-inventory.lock");
+		
+		if (locked) {
+			if (!lockfile.delete()) {
+			System.err.println("Failed to delete a lock file.");
+			}
 		}
 	}
 	
@@ -121,10 +152,17 @@ public class Initialize {
 	}
 	
 	public void initialize(boolean notfirstuser, HashMap<String,Page> pages) /*throws NotFirstUserException*/ {		
+		RegisterPage rp = new RegisterPage(pages.get("credentials"));
+		rp.root.clean();
+		
 		if (notfirstuser) {
 			// throw new NotFirstUserException();
+			LoginPage lp = new LoginPage(Initialize.pages.get("credentials"));
+			lp.paints();
+			lp.page.setVisible(true);
 		}else{		
-			RegisterPage rp = new RegisterPage(pages.get("credentials"));
+			this.createCoreFiles();
+			
 			rp.root.setVisible(true);
 			String msg_ = "First time user detected. Create an Owner account?";
 			int stat_ = JOptionPane.showConfirmDialog(null,
@@ -136,7 +174,8 @@ public class Initialize {
 						);
 			rp.paints();
 			if ((stat_ == 1) || (stat_ == -1)) {
-				System.exit(1);
+				Initialize.LockFile(true);
+				System.exit(0);
 			}
 			
 			rp.root.repaint();

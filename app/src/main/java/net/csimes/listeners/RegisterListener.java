@@ -34,7 +34,7 @@ public class RegisterListener implements DocumentListener, ActionListener {
 				txt.transferFocus();
 			}
 		} else {
-			JTextField usrF = (JTextField) rp.components.get("passfield");
+			JTextField usrF = (JTextField) rp.components.get("usernamefield");
 			JPasswordField passF = (JPasswordField) e.getSource();
 			
 			if (!String.valueOf(passF.getPassword()).equals("")) {
@@ -53,6 +53,7 @@ public class RegisterListener implements DocumentListener, ActionListener {
 				
 				String path = Initialize.rootAccPath;
 				WriteAccount.write(acc, path);
+				LoginPage.accounts = LoginPage.getAccounts();
 
 				String msg_ = "Registration completed. Proceed to Login?";
 				int stat_ = JOptionPane.showOptionDialog(null,
@@ -72,6 +73,7 @@ public class RegisterListener implements DocumentListener, ActionListener {
 					lp.paints();
 					lp.page.repaint();
 				} else {
+					Initialize.LockFile(true);
 					System.exit(0);
 				}
 				

@@ -42,6 +42,7 @@ public class Page extends JFrame {
 		return this;
 	}
 	
+	
 	public Page(String name) {
 		this.pageName = name;
 		setName(name);

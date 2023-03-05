@@ -36,6 +36,25 @@ public class SecurityControl implements Serializable {
 	private Random rd = new Random();
 
 
+	public static String toMD5(String passwd) {
+		String newPasswd = "";
+		
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			md.update(passwd.getBytes());
+			
+			byte[] digest = md.digest();
+			StringBuffer sb = new StringBuffer();
+			for (byte b: digest) {
+				sb.append(String.format("%02x", b & 0xff));
+			};
+			
+			newPasswd = sb.toString();
+		} catch (NoSuchAlgorithmException e) {e.printStackTrace();}
+		
+		return newPasswd;
+	}
+
 	private char[][] sliceArray(int key) {
 		char[][] dArrays = {
 			Arrays.copyOfRange(this.strArray, this.key, this.strArray.length - 1),

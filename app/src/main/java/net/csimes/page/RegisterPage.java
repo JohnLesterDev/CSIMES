@@ -200,8 +200,12 @@ public class RegisterPage {
 					if (stat_ == 0) {
 						JFrame root = (JFrame) we.getSource();
 						root.dispose();
-					}
-			} 
+				}
+			}
+			
+			public void windowClosed(WindowEvent we) {
+				Initialize.LockFile(true);
+			}
 		});
 		
 		this.root.setSize(rootWidth, rootHeight);
