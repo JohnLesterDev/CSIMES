@@ -6,6 +6,7 @@ import java.util.*;
 import javax.swing.*;
 
 import net.csimes.io.*;
+import net.csimes.exc.*;
 import net.csimes.img.*;
 import net.csimes.sec.*;
 import net.csimes.res.*;
@@ -17,10 +18,14 @@ import net.csimes.splash.*;
 
 
 public class Initialize {
+	private static String lockFilePath = System.getProperty("java.io.tmpdir");
 	private static String rootPartition = System.getenv("SystemDrive");
 	private static String rootDir = Initialize.getRootPartition() + File.separator + "CSIMES";
 	public static String rootAccPath = Initialize.rootDir + File.separator + "ACC";
-	private static File accountStat = new File(Initialize.rootDir + File.separator + "ACC");
+	public static File accountStat = new File(Initialize.rootDir + File.separator + "ACC");
+	
+	public static HashMap<String,Page> pages = Initialize.createPages(new String[]{"MAIN", "credentials", "popup", "free1", "free2", "free3"});	
+	public static HashMap<String,ImageIcon> icons = Initialize.loadIcons();
 	
 	public boolean isInternet;
 	public boolean isFirst;
@@ -36,6 +41,48 @@ public class Initialize {
 		}catch (IOException e) {
 			isInternet = false;
 		}
+	}
+	
+	public static void LockFile(Runnable r, Runnable error) {
+		File lockfile = new File(Initialize.lockFilePath, "csimes-inventory.lock");
+		
+		try {
+			if (!lockfile.createNewFile()) {
+				error.run();
+				return;
+				// System.exit(0);
+			}
+			
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				Initialize.LockFile(true);
+			}));
+			
+			r.run();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void LockFile(boolean locked) {
+		File lockfile = new File(Initialize.lockFilePath, "csimes-inventory.lock");
+		
+		if (locked) {
+			if (!lockfile.delete()) {
+			System.err.println("Failed to delete a lock file.");
+			}
+		}
+	}
+	
+	private static HashMap<String,ImageIcon> loadIcons() {
+		HashMap<String,ImageIcon> images = new HashMap<String,ImageIcon>();
+		ArrayList<String> imagesList = new ArrayList<String>();
+		
+		ResourceControl.getResourceList(imagesList, "icons");
+		for (int i=0;i < imagesList.size(); i++) {
+			images.put(imagesList.get(i), new ImageIcon(ResourceControl.getResourceFile(imagesList.get(i))));
+		}
+		
+		return images;
 	}
 	
 	public void copyAccounts(String path) {
@@ -67,41 +114,82 @@ public class Initialize {
 		
 	}
 	
-	public void checkRoot() {
+	public static HashMap<String,Page> createPages(String[] pagesName) {
+		HashMap<String,Page> pages = new HashMap<String,Page>();
+		
+		for (String pageName : pagesName) {
+			pages.put(pageName, new Page(pageName));
+		};
+		
+		return pages;
+	}
+	
+	public void createCoreFiles() {
 		File firstUser = new File(Initialize.rootDir + File.separator + "TRUE");
+
+		Initialize.accountStat.mkdirs();
+			
+		try {
+			firstUser.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		};  
+		
+		this.copyAccounts(Initialize.rootAccPath);
+	}
+	
+	public boolean checkRoot() {
+		File firstUser = new File(Initialize.rootDir + File.separator + "TRUE");
+		boolean status = false;
+		
 		
 		if ((firstUser.exists() && !firstUser.isDirectory()) && (Initialize.accountStat.exists() && Initialize.accountStat.isDirectory())) {
-			System.out.println("Not first user?");
-			// new LoginPage().new Login();
-		}else{
-			RegisterPage regPage = new RegisterPage();
+			status = true;
+		}
+		
+		return status;
+		
+	}
+	
+	public void initialize(boolean notfirstuser, HashMap<String,Page> pages) /*throws NotFirstUserException*/ {		
+		RegisterPage rp = new RegisterPage(pages.get("credentials"));
+		rp.root.clean();
+		
+		if (notfirstuser) {
+			// throw new NotFirstUserException();
+			LoginPage lp = new LoginPage(Initialize.pages.get("credentials"));
+			lp.paints();
+			lp.page.setVisible(true);
+		}else{		
+			this.createCoreFiles();
 			
+			rp.root.setVisible(true);
 			String msg_ = "First time user detected. Create an Owner account?";
-			int stat_ = JOptionPane.showConfirmDialog(null, msg_, "CSIMES - First Time User Detected", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-
+			int stat_ = JOptionPane.showConfirmDialog(null,
+						msg_, 
+						"CSIMES - First Time User Detected", 
+						JOptionPane.YES_NO_OPTION, 
+						JOptionPane.QUESTION_MESSAGE,
+						new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+						);
+			rp.paints();
 			if ((stat_ == 1) || (stat_ == -1)) {
-				System.exit(1);
+				Initialize.LockFile(true);
+				System.exit(0);
 			}
-
-			// Initialize.accountStat.mkdirs();
 			
-			/* try {
-			// firstUser.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			};  */
-			
-			
-			// this.copyAccounts(Initialize.rootAccPath);
-			regPage.root.setVisible(true);
-
-			
+			rp.root.repaint();
+			rp.tf.requestFocus();
 		}
 		
 	}
 	
 	public Initialize() {
-		this.checkRoot();
+		try {
+			this.initialize(this.checkRoot(), Initialize.pages);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static String getRootPartition() {

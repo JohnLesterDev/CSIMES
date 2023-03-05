@@ -30,4 +30,16 @@ public class DocumentLimiter extends DocumentFilter {
 		
 		super.replace(fb, offset, length, text, attrs);
 	}
+
+	@Override
+	public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr) throws  BadLocationException {
+		int curLen = fb.getDocument().getLength();
+		int overLimit = (curLen + text.length()) - limit;
+		
+		if (overLimit > 0) {
+			text = text.substring(0, text.length() - overLimit);
+		}
+		
+		super.insertString(fb, offset, text, attr);
+	}
 }

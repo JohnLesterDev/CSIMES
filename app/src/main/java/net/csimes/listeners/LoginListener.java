@@ -20,10 +20,28 @@ import net.csimes.listeners.*;
 
 
 public class LoginListener implements DocumentListener, ActionListener {
-	private RegisterPage rp;
+	private LoginPage rp;
 	
-	public LoginListener(RegisterPage rp) {
+	public LoginListener(LoginPage rp) {
 		this.rp = rp;
+	}
+	
+	public void launchMain() {
+		this.rp.page.dispose();
+		Initialize.pages.remove("credentials");
+		Initialize.pages.put("credentials", new Page("credentials"));
+		Initialize.pages.get("MAIN").clean();
+		MAINPAGE mp = new MAINPAGE(Initialize.pages.get("MAIN"));
+		
+		String msg_ = "Logged in successfully! Redirecting to Dashboard...";
+		JOptionPane.showMessageDialog(null,
+			msg_, 
+			"CSIMES - Login Successful!", 
+			JOptionPane.INFORMATION_MESSAGE,
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+			);
+		mp.page.setVisible(true);
+		return;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -38,39 +56,189 @@ public class LoginListener implements DocumentListener, ActionListener {
 			JPasswordField passF = (JPasswordField) e.getSource();
 			
 			if (!String.valueOf(passF.getPassword()).equals("")) {
-				Account acc = new SecurityControl(new Account().setUserName(usrF.getText()).setPasswd(String.valueOf(passF.getPassword())).setAccountType(1)).encryptAccount();
-			
-				File ownerAcc = new File(Initialize.rootAccPath + File.separator + acc.getUserName());
-				
-				try {
-				ownerAcc.createNewFile();
-				} catch (IOException ex) {
-					ex.printStackTrace();
-				};
-				
-				String path = Initialize.rootAccPath;
-				WriteAccount.write(acc, path);
-				
-				this.rp.root.getContentPane().removeAll();
-				this.rp.root.revalidate();
-				this.rp.root.repaint();
-				
-				new LoginPage(this.rp);
+				passF.transferFocus();
 			}
 		}   
 	}
 	
 	public void insertUpdate(DocumentEvent e) {
-		
+		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
+		if (textField.getName().equals("usernamefield")) {
+			JPasswordField passF = (JPasswordField) rp.components.get("passfield");
+			String nPass = SecurityControl.toMD5(String.valueOf(passF.getPassword()));
+			if (textField.getText().equals("")) {
+				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			}
+			if (LoginPage.accounts.containsKey(textField.getText())) {
+				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
+					this.launchMain();
+					return;
+				} else {
+					this.changeIcon("checked", true, (JLabel) rp.components.get("usernamelogo"));
+					textField.transferFocus();
+				}
+				return;
+			} else if (textField.getText().equals("Username")){
+				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			} else {
+				this.changeIcon("wrong", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			}
+		} else {
+			JPasswordField txt = (JPasswordField) e.getDocument().getProperty("parent");
+			textField = (JTextField) rp.components.get("usernamefield");
+			String nPass = SecurityControl.toMD5(String.valueOf(txt.getPassword()));
+
+			if (String.valueOf(txt.getPassword()).equals("")) {
+				this.changeIcon("normal", false, (JLabel) rp.components.get("passwdlogo"));
+				return;
+			}
+			if (LoginPage.accounts.containsKey(textField.getText())) {
+				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
+					this.changeIcon("checked", false, (JLabel) rp.components.get("passwdlogo"));
+					this.launchMain();
+
+					return;
+				} else if (String.valueOf(txt.getPassword()).equals("Password")){
+					this.changeIcon("normal", true, (JLabel) rp.components.get("passwdlogo"));
+					return;
+				} else {
+					this.changeIcon("wrong", false, (JLabel) rp.components.get("passwdlogo"));
+					return;
+				}
+			}
+		}
 	}
 	
 	public void removeUpdate(DocumentEvent e) {
-		
+		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
+		if (textField.getName().equals("usernamefield")) {
+			JPasswordField passF = (JPasswordField) rp.components.get("passfield");
+			String nPass = SecurityControl.toMD5(String.valueOf(passF.getPassword()));
+			if (textField.getText().equals("")) {
+				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			}
+			if (LoginPage.accounts.containsKey(textField.getText())) {
+				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
+					this.launchMain();
+					return;
+				} else {
+					this.changeIcon("checked", true, (JLabel) rp.components.get("usernamelogo"));
+					textField.transferFocus();
+				}
+				return;
+			} else if (textField.getText().equals("Username")){
+				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			} else {
+				this.changeIcon("wrong", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			}
+		} else {
+			JPasswordField txt = (JPasswordField) e.getDocument().getProperty("parent");
+			textField = (JTextField) rp.components.get("usernamefield");
+			String nPass = SecurityControl.toMD5(String.valueOf(txt.getPassword()));
+
+			if (String.valueOf(txt.getPassword()).equals("")) {
+				this.changeIcon("normal", false, (JLabel) rp.components.get("passwdlogo"));
+				return;
+			}
+			if (LoginPage.accounts.containsKey(textField.getText())) {
+				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
+					this.changeIcon("checked", false, (JLabel) rp.components.get("passwdlogo"));
+					this.launchMain();
+
+					return;
+				} else if (String.valueOf(txt.getPassword()).equals("Password")){
+					this.changeIcon("normal", true, (JLabel) rp.components.get("passwdlogo"));
+					return;
+				} else {
+					this.changeIcon("wrong", false, (JLabel) rp.components.get("passwdlogo"));
+					return;
+				}
+			}
+		}
 	}
 	
 	@Override
 	public void changedUpdate(DocumentEvent e) {
+		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
+		if (textField.getName().equals("usernamefield")) {
+			if (textField.getText().equals("")) {
+				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			}
+			
+			if (LoginPage.accounts.containsKey(textField.getText())) {
+				this.changeIcon("checked", true, (JLabel) rp.components.get("usernamelogo"));
+				textField.transferFocus();
+				return;
+			} else if (textField.getText().equals("Username")){
+				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			} else {
+				this.changeIcon("wrong", true, (JLabel) rp.components.get("usernamelogo"));
+				return;
+			}
+		} else {
+			JPasswordField txt = (JPasswordField) e.getDocument().getProperty("parent");
+			textField = (JTextField) rp.components.get("usernamefield");
+			String nPass = SecurityControl.toMD5(String.valueOf(txt.getPassword()));
+
+			if (String.valueOf(txt.getPassword()).equals("")) {
+				this.changeIcon("normal", false, (JLabel) rp.components.get("passwdlogo"));
+				return;
+			}
+			if (LoginPage.accounts.containsKey(textField.getText())) {
+				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
+					this.changeIcon("checked", false, (JLabel) rp.components.get("passwdlogo"));
+					return;
+				} else if (String.valueOf(txt.getPassword()).equals("Password")){
+					this.changeIcon("normal", true, (JLabel) rp.components.get("passwdlogo"));
+					return;
+				} else {
+					this.changeIcon("wrong", false, (JLabel) rp.components.get("passwdlogo"));
+					return;
+				}
+			}
+		}
+	}
+	
+	public void changeIcon(String icontype, boolean isUser, JLabel label) {
+		Icon img = label.getIcon();
+		int w = img.getIconWidth();
+		int h = img.getIconHeight();
 		
+		if (isUser) {
+				switch (icontype) {
+				case "checked":
+					label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/acc_checked.png").getImage(), w, h)));
+					break;
+				case "wrong":
+					label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/acc_wrong.png").getImage(), w, h)));
+					break;
+				case "normal":
+					label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/acc_normal.png").getImage(), w, h)));
+					break;
+				
+				}
+		} else {
+			switch (icontype) {
+			case "checked":
+				label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/pass_checked.png").getImage(), w, h)));
+				break;
+			case "wrong":
+				label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/pass_wrong.png").getImage(), w, h)));
+				break;
+			case "normal":
+				label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/pass_normal.png").getImage(), w, h)));
+				break;
+			
+			}
+		}
 	}
 	
 }
