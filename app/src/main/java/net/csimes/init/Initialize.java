@@ -24,7 +24,7 @@ public class Initialize {
 	public static String rootAccPath = Initialize.rootDir + File.separator + "ACC";
 	public static File accountStat = new File(Initialize.rootDir + File.separator + "ACC");
 	
-	public static HashMap<String,Page> pages = Initialize.createPages(new String[]{"MAIN", "credentials", "popup", "free1", "free2"});	
+	public static HashMap<String,Page> pages = Initialize.createPages(new String[]{"MAIN", "credentials", "popup", "free1", "free2", "free3"});	
 	public static HashMap<String,ImageIcon> icons = Initialize.loadIcons();
 	
 	public boolean isInternet;

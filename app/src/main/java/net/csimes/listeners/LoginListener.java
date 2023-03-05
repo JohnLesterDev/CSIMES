@@ -26,6 +26,24 @@ public class LoginListener implements DocumentListener, ActionListener {
 		this.rp = rp;
 	}
 	
+	public void launchMain() {
+		this.rp.page.dispose();
+		Initialize.pages.remove("credentials");
+		Initialize.pages.put("credentials", new Page("credentials"));
+		Initialize.pages.get("MAIN").clean();
+		MAINPAGE mp = new MAINPAGE(Initialize.pages.get("MAIN"));
+		
+		String msg_ = "Logged in successfully! Redirecting to Dashboard...";
+		JOptionPane.showMessageDialog(null,
+			msg_, 
+			"CSIMES - Login Successful!", 
+			JOptionPane.INFORMATION_MESSAGE,
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+			);
+		mp.page.setVisible(true);
+		return;
+	}
+	
 	public void actionPerformed(ActionEvent e) {
 		JTextField txt = (JTextField) e.getSource();
 		
@@ -38,7 +56,7 @@ public class LoginListener implements DocumentListener, ActionListener {
 			JPasswordField passF = (JPasswordField) e.getSource();
 			
 			if (!String.valueOf(passF.getPassword()).equals("")) {
-				
+				passF.transferFocus();
 			}
 		}   
 	}
@@ -46,14 +64,20 @@ public class LoginListener implements DocumentListener, ActionListener {
 	public void insertUpdate(DocumentEvent e) {
 		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
 		if (textField.getName().equals("usernamefield")) {
+			JPasswordField passF = (JPasswordField) rp.components.get("passfield");
+			String nPass = SecurityControl.toMD5(String.valueOf(passF.getPassword()));
 			if (textField.getText().equals("")) {
 				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
 				return;
 			}
-			
 			if (LoginPage.accounts.containsKey(textField.getText())) {
-				this.changeIcon("checked", true, (JLabel) rp.components.get("usernamelogo"));
-				textField.transferFocus();
+				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
+					this.launchMain();
+					return;
+				} else {
+					this.changeIcon("checked", true, (JLabel) rp.components.get("usernamelogo"));
+					textField.transferFocus();
+				}
 				return;
 			} else if (textField.getText().equals("Username")){
 				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
@@ -74,6 +98,8 @@ public class LoginListener implements DocumentListener, ActionListener {
 			if (LoginPage.accounts.containsKey(textField.getText())) {
 				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
 					this.changeIcon("checked", false, (JLabel) rp.components.get("passwdlogo"));
+					this.launchMain();
+
 					return;
 				} else if (String.valueOf(txt.getPassword()).equals("Password")){
 					this.changeIcon("normal", true, (JLabel) rp.components.get("passwdlogo"));
@@ -89,14 +115,20 @@ public class LoginListener implements DocumentListener, ActionListener {
 	public void removeUpdate(DocumentEvent e) {
 		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
 		if (textField.getName().equals("usernamefield")) {
+			JPasswordField passF = (JPasswordField) rp.components.get("passfield");
+			String nPass = SecurityControl.toMD5(String.valueOf(passF.getPassword()));
 			if (textField.getText().equals("")) {
 				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
 				return;
 			}
-			
 			if (LoginPage.accounts.containsKey(textField.getText())) {
-				this.changeIcon("checked", true, (JLabel) rp.components.get("usernamelogo"));
-				textField.transferFocus();
+				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
+					this.launchMain();
+					return;
+				} else {
+					this.changeIcon("checked", true, (JLabel) rp.components.get("usernamelogo"));
+					textField.transferFocus();
+				}
 				return;
 			} else if (textField.getText().equals("Username")){
 				this.changeIcon("normal", true, (JLabel) rp.components.get("usernamelogo"));
@@ -117,6 +149,8 @@ public class LoginListener implements DocumentListener, ActionListener {
 			if (LoginPage.accounts.containsKey(textField.getText())) {
 				if (LoginPage.accounts.get(textField.getText()).getPasswd().equals(nPass)) {
 					this.changeIcon("checked", false, (JLabel) rp.components.get("passwdlogo"));
+					this.launchMain();
+
 					return;
 				} else if (String.valueOf(txt.getPassword()).equals("Password")){
 					this.changeIcon("normal", true, (JLabel) rp.components.get("passwdlogo"));
