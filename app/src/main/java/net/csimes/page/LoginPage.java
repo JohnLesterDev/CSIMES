@@ -274,7 +274,7 @@ public class LoginPage {
 					String msg_ = "Do you wish to exit?";
 					int stat_ = JOptionPane.showOptionDialog(null,
 								msg_, 
-								"CSIMES - Exiting Registration", 
+								"CSIMES - Exiting Login", 
 								JOptionPane.YES_NO_OPTION, 
 								JOptionPane.QUESTION_MESSAGE,
 								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
