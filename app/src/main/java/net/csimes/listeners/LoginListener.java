@@ -41,6 +41,9 @@ public class LoginListener implements DocumentListener, ActionListener {
 			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
 			);
 		mp.page.setVisible(true);
+		mp.paints();
+		mp.page.revalidate();
+		mp.page.repaint();
 		return;
 	}
 	
