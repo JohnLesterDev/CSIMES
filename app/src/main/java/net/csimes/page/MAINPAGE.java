@@ -17,6 +17,7 @@ import net.csimes.init.*;
 import net.csimes.page.*;
 import net.csimes.temp.*;
 import net.csimes.util.*;
+import net.csimes.mouse.*;
 import net.csimes.splash.*;
 import net.csimes.listeners.*;
 
@@ -28,6 +29,7 @@ public class MAINPAGE {
 	public int rootWidth, rootHeight;
 	
 	private Point mOffset;
+	private Account acc;
 	
 	public HashMap<String,Component> components = new HashMap<String,Component>();
 	
@@ -37,33 +39,145 @@ public class MAINPAGE {
 		int greyBgX = -10;
 		int greyBgY = -10;
 		int greyBgW = rootWidth + rootWidth;
-		int greyBgH = (int) (((float) this.rootHeight) * 0.13);
+		int greyBgH = (int) (((float) this.rootHeight) * 0.11);
 		
 		// Exit rect
-		int exW = (int) (((float) this.rootWidth) * 0.05); 
-		int exH = (int) (((float) this.rootWidth) * 0.05); 	
-		int exX = rootWidth - (int) (((float) this.rootWidth) * 0.07);
-		int exY = (int) (((float) this.rootHeight) * 0.015);
+		int exW = (int) (((float) this.rootWidth) * 0.04); 
+		int exH = (int) (((float) this.rootWidth) * 0.04); 	
+		int exX = rootWidth - (int) (((float) this.rootWidth) * 0.065);
+		int exY = (int) (((float) this.rootHeight) * 0.016);
+		
+		// Title rect
+		int tX = (int) (((float) this.rootWidth) * 0.15);
+		int tY = (int) (((float) this.rootHeight) * 0.009);
+		int tW = rootWidth / 2;
+		int tH = (int) (((float) this.rootWidth) * 0.05); 	
+		int tFont = (int) (((float) this.rootHeight) * 0.03);
+		
+		// Logo rect
+		int logW = (int) (((float) this.rootHeight) * 0.08);
+		int logH = (int) (((float) this.rootHeight) * 0.08);
+		int logX = tX - logW - (int) (((float) this.rootWidth) * 0.013);
+		int logY = (int) (((float) this.rootHeight) * 0.009);
+		
+		// hamburger rect
+		int hamX =  (int) (((float) this.rootWidth) * 0.01);
+		int hamY = (int) (((float) this.rootHeight) * 0.009);
+		int hamW = (int) (((float) this.rootHeight) * 0.08);
+		int hamH = (int) (((float) this.rootHeight) * 0.08);
 		
 		
 		JLabel ex = this.createLabel(
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/x.png").getImage(), exW, exH)), 
-			"exits", new Rectangle(exX, exY, exW, exH));
+			"exits", new Rectangle(exX, exY, exW, exH), "x");
+		
+		JLabel logo_ = this.createLabel(
+			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/csimes_full.png").getImage(), logW, logH)), 
+			"title", new Rectangle(logX, logY, logW, logH), "csimes_full");
+		JLabel ham_ = this.createLabel(
+			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/hamburger.png").getImage(), hamW, hamH)), 
+			"hamburger", new Rectangle(hamX, hamY, hamW, hamH), "hamburger");
+		
+		JPanel sidebar = this.sidebars();
+		
+		JLabel titL = this.createLabel(false, "Dave Housing & Construction Supplies IMES", tFont, new Rectangle(tX, tY, tW, tH));
+		
 		JLabel greyBg = this.createLabel("greybg", new Rectangle(greyBgX, greyBgY, greyBgW, greyBgH), 144, 142, 151);
 	}
 	
-	public JLabel createLabel(ImageIcon icon, String name, Rectangle rect) {
-		JLabel label = new JLabel();
-		label.setIcon(icon);
-		label.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				 WindowEvent we = new WindowEvent(page, WindowEvent.WINDOW_CLOSING);
-				 Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(we);
-			}
-		});
+	public JPanel sidebars() {
+		JPanel panel = new JPanel();
+		panel.setName("sidebar");
+		panel.setBackground(new Color(144, 142, 151));
+		panel.setLayout(null);
+		panel.setVisible(false);
+		
+		// Panel rect
+		int sX = 0;
+		int sY = (int) (((float) this.rootHeight) * 0.09);
+		int sW = (int) (((float) this.rootWidth) * 0.22);
+		int sH = this.rootHeight;
+		
+		// User logo
+		int usX = (int) (((float) sW) * 0.15);
+		int usY = (int) (((float) this.rootHeight) * 0.04);
+		int usW = (int) (((float) sW) * 0.15);
+		int usH = (int) (((float) sW) * 0.15);
+		
+		JLabel usrlogo_ = this.createLabel(
+			panel,
+			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/user.png").getImage(), usW, usH)), 
+			"userlogo", new Rectangle(usX, usY, usW, usH), "user");
+		
+		panel.setBounds(new Rectangle(sX, sY, sW, sH));
+		this.page.getContentPane().add(panel);
+		this.components.put(panel.getName(), panel);
+		
+		return panel;
+	}
+	
+	public JLabel createLabel(boolean isText, String name, int fontSize, Rectangle labelRect) {
+		JLabel label = new JLabel(name);
+		
+		label.setBounds(labelRect);
+		
+		if (isText == true) {
+			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.white);
+		} else {
+			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.black);
+		}
 		
 		this.page.getContentPane().add(label);
+		this.components.put(label.getName(), label);
+		
+		return label;
+	}
+	
+	public JLabel createLabel(boolean isText, JPanel panel, String name, int fontSize, Rectangle labelRect) {
+		JLabel label = new JLabel(name);
+		
+		label.setBounds(labelRect);
+		
+		if (isText == true) {
+			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.white);
+		} else {
+			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.black);
+		}
+		
+		panel.add(label);
+		this.components.put(label.getName(), label);
+		
+		return label;
+	}
+	
+	public JLabel createLabel(ImageIcon icon, String name, Rectangle rect, String iconType) {
+		JLabel label = new JLabel();
+		label.setName(name);
+		label.setIcon(icon);
+		label.addMouseListener(new MainMouse(page, label, iconType, this.components));
+		
+		this.page.getContentPane().add(label);
+		label.setBounds(rect);
+		this.components.put(label.getName(), label);
+		
+		return label;
+	}
+	
+	public JLabel createLabel(JPanel panel, ImageIcon icon, String name, Rectangle rect, String iconType) {
+		JLabel label = new JLabel();
+		label.setName(name);
+		label.setIcon(icon);
+		label.addMouseListener(new MainMouse(page, label, iconType, this.components));
+		
+		panel.add(label);
 		label.setBounds(rect);
 		this.components.put(label.getName(), label);
 		
@@ -84,8 +198,9 @@ public class MAINPAGE {
 		return label;
 	}
 	
-	public MAINPAGE(Page page) {
+	public MAINPAGE(Page page, Account acc) {
 		this.page = page;
+		this.acc = acc;
 		this.setFrame();
 	}
 	
