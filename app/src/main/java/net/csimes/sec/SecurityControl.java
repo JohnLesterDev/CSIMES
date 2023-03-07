@@ -22,6 +22,7 @@ public class SecurityControl implements Serializable {
 	public static String token = "LIcayAn.LesTER119pythonPINAKAGWApo";
 	
 	private Account acc;
+	private Product prod;
 	
 	private String str = " A&BCDEF@!GHIJKLMNO#PQRSTUVWXYZabcdefghijklmn-opqrstuvwxyz0123456789,~`";
 	private char[] strArray = str.toCharArray();
@@ -157,6 +158,26 @@ public class SecurityControl implements Serializable {
 		
 		this.acc = acc;
 		
+	}
+	
+	public SecurityControl(Product prod) {
+		
+		this.prod = prod;
+		
+	}
+	
+	public Product encryptProduct() {
+		this.prod.name = this.encryptString(this.prod.name).getResult();
+		this.prod.category = this.encryptString(this.prod.category).getResult();
+		
+		return this.prod;
+	}
+	
+	public Product decryptProduct() {
+		this.prod.name = this.decryptString(this.prod.name).getResult();
+		this.prod.category = this.decryptString(this.prod.category).getResult();
+		
+		return this.prod;
 	}
 	
 	public Account encryptAccount() {

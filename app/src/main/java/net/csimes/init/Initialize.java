@@ -27,6 +27,9 @@ public class Initialize {
 	public static File accountStat = new File(Initialize.rootDir + File.separator + "ACC");
 	public static File firstUser = new File(Initialize.rootDir + File.separator + "TRUE");
 	
+	public static File invenFile = new File(Initialize.rootDir + File.separator + "INVENTORY");
+	public static String invenPath = Initialize.rootDir + File.separator + "INVENTORY";
+	
 	public static HashMap<String,Page> pages = Initialize.createPages(new String[]{"MAIN", "credentials", "popup", "free1", "free2", "free3"});	
 	public static HashMap<String,ImageIcon> icons = Initialize.loadIcons();
 	
@@ -129,6 +132,7 @@ public class Initialize {
 	
 	public void createCoreFiles() {
 		Initialize.accountStat.mkdirs();
+		Initialize.invenFile.mkdirs();
 			
 		try {
 			Initialize.firstUser.createNewFile();

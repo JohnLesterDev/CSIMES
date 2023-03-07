@@ -7,6 +7,7 @@ import javax.swing.*;												 // Importing the java Swing package
 import java.awt.image.*;
 import java.awt.event.*;											 // Importing the AWT Event package
 import javax.swing.text.*;											 // Importing the Text package from java Swing
+import javax.swing.table.*;										 // Importing the Border package from java Swing
 import javax.swing.border.*;										 // Importing the Border package from java Swing
 
 import net.csimes.io.*;
@@ -31,7 +32,95 @@ public class MAINPAGE {
 	private Point mOffset;
 	private Account acc;
 	
+	private JTable table;
+	private JScrollPane spane;
+	public int maxID_ = 0;
+	
 	public HashMap<String,Component> components = new HashMap<String,Component>();
+	
+	public void writeProduct() {
+		String category, name;
+		int productID, quantity;
+		float price, total;
+		
+		category = JOptionPane.showInputDialog(null, "Input Category:");
+		name = JOptionPane.showInputDialog(null, "Input Product Name:");
+		quantity = Integer.valueOf(JOptionPane.showInputDialog(null, "Input Product Quantity:"));
+		price = Float.parseFloat(JOptionPane.showInputDialog(null, "Input Product Price:"));
+		productID = this.maxID_ + 1;
+		this.maxID_ = productID;
+
+		Product prd = new Product(
+					productID,
+					category,
+					name,
+					quantity,
+					price
+	);
+		ProductIO.write(
+			new SecurityControl(prd).encryptProduct(),
+			Initialize.invenPath
+		);
+		
+		System.out.println(
+			"ID:" + productID +
+			"Category:" + category +
+			"Name:" + name +
+			"Quantity:" + quantity +
+			"Price:" + price +
+			"Total:" + prd.totals()
+		);
+		
+		
+		String msg_ = "Product Added!";
+			JOptionPane.showMessageDialog(null,
+						msg_, 
+						"CSIMES - Product", 
+						JOptionPane.INFORMATION_MESSAGE,
+						new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+		);
+		
+		table.setModel(
+			new DefaultTableModel(this.getTable(), new String[]{"Product ID", "Category", "Product", "Quantity", "Price", "Total Amount"})
+		);
+		
+	}
+	
+	public Object[][] getTable() {
+		ArrayList<Object[]> arryR = new ArrayList<Object[]>();
+		ArrayList<Integer> maxID = new ArrayList<Integer>();
+		
+		for (File file : Initialize.invenFile.listFiles()) {
+			Object[] objr = new Object[6];
+			Product prd = ProductIO.read(file.getAbsolutePath());
+			
+			objr[0] = prd.productID;
+			objr[1] = prd.category;
+			objr[2] = prd.name;
+			objr[3] = prd.quantity;
+			objr[4] = prd.price;
+			objr[5] = prd.totals();
+			
+			maxID.add(prd.productID);
+			
+			arryR.add(objr);
+			
+		};
+
+		if (!maxID.isEmpty()) {
+			this.maxID_ = Collections.max(maxID);
+		}
+		
+		Object[][] rlObj = new Object[arryR.size()][6];
+		
+		for (int i=0; i < arryR.size(); i++) {
+			for (int j=0; j < arryR.get(i).length; j++) {
+				rlObj[i][j] = arryR.get(i)[j];
+			}
+		}
+		
+		return rlObj;
+	}
 	
 	
 	public void paints() {
@@ -66,6 +155,31 @@ public class MAINPAGE {
 		int hamW = (int) (((float) this.rootHeight) * 0.08);
 		int hamH = (int) (((float) this.rootHeight) * 0.08);
 		
+		// hamburger rect
+		int btnX =  (int) (((float) this.rootWidth) * 0.5);
+		int btnY = (int) (((float) this.rootHeight) * 0.9);
+		int btnW = (int) (((float) this.rootHeight) * 0.08);
+		int btnH = (int) (((float) this.rootHeight) * 0.05);
+		
+		// TABLE YAWA AAAHHHH
+		// int ttX = (int) (((float) this.rootWidth) * 0.28);
+		int ttX = (int) (((float) this.rootWidth) * 0.18);
+		int ttY = (int) (((float) this.rootHeight) * 0.14);
+		int ttW = (int) (((float) this.rootWidth) * 0.62);
+		int ttH =  (int) (((float) this.rootHeight) * 0.76);
+		
+		this.table = new JTable();
+		this.spane = new JScrollPane(table);
+		
+		table.setModel(
+			new DefaultTableModel(this.getTable(), new String[]{"Product ID", "Category", "Product", "Quantity", "Price", "Total Amount"})
+		);
+		
+		
+		this.spane.setBounds(new Rectangle(ttX, ttY, ttW, ttH));
+		this.page.getContentPane().add(spane);
+		
+		
 		
 		JLabel ex = this.createLabel(
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/x.png").getImage(), exW, exH)), 
@@ -80,6 +194,16 @@ public class MAINPAGE {
 		
 		JPanel sidebar = this.sidebars();
 		
+		JButton btn_ = new JButton("ADD");
+		btn_.setBounds(btnX, btnY, btnW, btnH);
+		btn_.setBorder(null);
+		btn_.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				writeProduct();
+			}
+		});
+		this.page.getContentPane().add(btn_);
+		
 		JLabel titL = this.createLabel(false, "Dave Housing & Construction Supplies IMES", tFont, new Rectangle(tX, tY, tW, tH));
 		
 		JLabel greyBg = this.createLabel("greybg", new Rectangle(greyBgX, greyBgY, greyBgW, greyBgH), 144, 142, 151);
@@ -92,22 +216,31 @@ public class MAINPAGE {
 		panel.setLayout(null);
 		panel.setVisible(false);
 		
-		// Panel rect
+		// Panel rect              
 		int sX = 0;
 		int sY = (int) (((float) this.rootHeight) * 0.09);
 		int sW = (int) (((float) this.rootWidth) * 0.22);
 		int sH = this.rootHeight;
 		
-		// User logo
+		// User logo Rect
 		int usX = (int) (((float) sW) * 0.15);
 		int usY = (int) (((float) this.rootHeight) * 0.04);
 		int usW = (int) (((float) sW) * 0.15);
 		int usH = (int) (((float) sW) * 0.15);
 		
+		//  Acccount rect
+		int acX =  usX + usW +  (int) (((float) sW) * 0.1);
+		int acY = usY;
+		int acW = sW;
+		int acH =  (int) (((float) this.rootWidth) * 0.045); 	
+		int acFont = (int) (((float) this.rootHeight) * 0.034);
+		
 		JLabel usrlogo_ = this.createLabel(
 			panel,
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/user.png").getImage(), usW, usH)), 
 			"userlogo", new Rectangle(usX, usY, usW, usH), "user");
+		
+		JLabel accT = this.createLabel(false, panel, acc.accTypes.get(Integer.valueOf("" + acc.getAccountType())), acFont, new Rectangle(acX, acY, acW, acH));
 		
 		panel.setBounds(new Rectangle(sX, sY, sW, sH));
 		this.page.getContentPane().add(panel);
@@ -162,7 +295,7 @@ public class MAINPAGE {
 		JLabel label = new JLabel();
 		label.setName(name);
 		label.setIcon(icon);
-		label.addMouseListener(new MainMouse(page, label, iconType, this.components));
+		label.addMouseListener(new MainMouse(page, label, this.spane, iconType, this.components));
 		
 		this.page.getContentPane().add(label);
 		label.setBounds(rect);
@@ -175,7 +308,7 @@ public class MAINPAGE {
 		JLabel label = new JLabel();
 		label.setName(name);
 		label.setIcon(icon);
-		label.addMouseListener(new MainMouse(page, label, iconType, this.components));
+		label.addMouseListener(new MainMouse(page, label, this.spane, iconType, this.components));
 		
 		panel.add(label);
 		label.setBounds(rect);

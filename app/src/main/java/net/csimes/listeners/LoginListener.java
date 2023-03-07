@@ -105,7 +105,7 @@ public class LoginListener implements DocumentListener, ActionListener {
 
 					return;
 				} else if (String.valueOf(txt.getPassword()).equals("Password")){
-					this.changeIcon("normal", true, (JLabel) rp.components.get("passwdlogo"));
+					this.changeIcon("normal", false, (JLabel) rp.components.get("passwdlogo"));
 					return;
 				} else {
 					this.changeIcon("wrong", false, (JLabel) rp.components.get("passwdlogo"));
@@ -156,7 +156,7 @@ public class LoginListener implements DocumentListener, ActionListener {
 
 					return;
 				} else if (String.valueOf(txt.getPassword()).equals("Password")){
-					this.changeIcon("normal", true, (JLabel) rp.components.get("passwdlogo"));
+					this.changeIcon("normal", false, (JLabel) rp.components.get("passwdlogo"));
 					return;
 				} else {
 					this.changeIcon("wrong", false, (JLabel) rp.components.get("passwdlogo"));
@@ -208,7 +208,7 @@ public class LoginListener implements DocumentListener, ActionListener {
 
 					return;
 				} else if (String.valueOf(txt.getPassword()).equals("Password")){
-					this.changeIcon("normal", true, (JLabel) rp.components.get("passwdlogo"));
+					this.changeIcon("normal", false, (JLabel) rp.components.get("passwdlogo"));
 					return;
 				} else {
 					this.changeIcon("wrong", false, (JLabel) rp.components.get("passwdlogo"));
