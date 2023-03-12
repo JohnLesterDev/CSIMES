@@ -35,12 +35,15 @@ public class MainMouse extends MouseAdapter {
 	public int rootWidth = (int) (((float) dimension.width) * 0.8);
 	public int rootHeight = (int) (((float) dimension.height) * 0.8);
 	
-	public MainMouse(Page page, JLabel label, JScrollPane table, String iconType, HashMap<String,Component> components) {
+	public Sidebars mainPanel;
+	
+	public MainMouse(Page page, Sidebars mainPanel, JLabel label, JScrollPane table, String iconType, HashMap<String,Component> components) {
 		this.label = label;
 		this.page = page;
 		this.table = table;
 		this.components = components;
 		this.iconType = iconType;
+		this.mainPanel = mainPanel;
 	}
 	
 	@Override
@@ -58,17 +61,15 @@ public class MainMouse extends MouseAdapter {
 			WindowEvent we = new WindowEvent(this.page, WindowEvent.WINDOW_CLOSING);
 			Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(we);
 		} else if (this.label.getName().equals("hamburger")) {
-			JPanel panel = (JPanel) this.components.get("sidebar");
+			Sidebars panel = (Sidebars) this.components.get("sidebar");
+			JScrollPane panes = (JScrollPane) this.components.get("tablespane");
 			
-			if (panel.isVisible()) {
-				panel.setVisible(false);
-				Point pt = this.table.getLocation();
-				table.setLocation((int) (((float) this.rootWidth) * 0.18), pt.y);
-				
+			if (panel.isShown && mainPanel.isShown) {
+				panel.runs();
+				mainPanel.runs();
 			} else {
-				panel.setVisible(true);
-				Point pt = this.table.getLocation();
-				table.setLocation((int) (((float) this.rootWidth) * 0.28), pt.y);
+				panel.runs();
+				mainPanel.runs();
 			}
 		}
 	}

@@ -205,6 +205,8 @@ public class RegisterPage {
 	public RegisterPage(Page page) {
 		this.root = page;
 		
+		Initialize.LockFile();
+		
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 		this.rootWidth = (int) (((float) dimension.width) * 0.25);
 		this.rootHeight = (int) (((float) dimension.height) * 0.35);
