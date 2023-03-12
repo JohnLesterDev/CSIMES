@@ -31,6 +31,7 @@ public class LoginPage {
 	
 	
 	public LoginPage(Page page) {
+		Initialize.LockFile();
 		this.page = page;
 		this.loginDesign();
 	}

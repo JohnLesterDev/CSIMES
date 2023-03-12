@@ -68,6 +68,18 @@ public class Initialize {
 			e.printStackTrace();
 		}
 	}
+
+	public static void LockFile() {
+		File lockfile = new File(Initialize.lockFilePath, "csimes-inventory.lock");
+		
+		try {
+			if (!lockfile.createNewFile()) {
+				System.out.println("A Lock file has been created.. somehow");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public static void LockFile(boolean locked) {
 		File lockfile = new File(Initialize.lockFilePath, "csimes-inventory.lock");

@@ -25,7 +25,6 @@ public class ResourceControl {
 	}
 	
 	public static InputStream getResourceFileStream(String path, boolean in) {
-		System.out.println(path);
 		
 		InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
 		return is;

@@ -19,13 +19,14 @@ import net.csimes.page.*;
 import net.csimes.temp.*;
 import net.csimes.util.*;
 import net.csimes.mouse.*;
+import net.csimes.audio.*;
 import net.csimes.splash.*;
 import net.csimes.listeners.*;
 
 
 
-
 public class MAINPAGE {
+	
 	public Page page;
 	public int rootWidth, rootHeight;
 	
@@ -33,93 +34,92 @@ public class MAINPAGE {
 	private Account acc;
 	
 	private JTable table;
+	private Sidebars mainPanel;
 	private JScrollPane spane;
 	public int maxID_ = 0;
 	
 	public HashMap<String,Component> components = new HashMap<String,Component>();
+	public HashMap<String,JPanel> sidebarPanels = new HashMap<String,JPanel>();
 	
-	public void writeProduct() {
-		String category, name;
-		int productID, quantity;
-		float price, total;
-		
-		category = JOptionPane.showInputDialog(null, "Input Category:");
-		name = JOptionPane.showInputDialog(null, "Input Product Name:");
-		quantity = Integer.valueOf(JOptionPane.showInputDialog(null, "Input Product Quantity:"));
-		price = Float.parseFloat(JOptionPane.showInputDialog(null, "Input Product Price:"));
-		productID = this.maxID_ + 1;
-		this.maxID_ = productID;
-
-		Product prd = new Product(
-					productID,
-					category,
-					name,
-					quantity,
-					price
-	);
-		ProductIO.write(
-			new SecurityControl(prd).encryptProduct(),
-			Initialize.invenPath
-		);
-		
-		System.out.println(
-			"ID:" + productID +
-			"Category:" + category +
-			"Name:" + name +
-			"Quantity:" + quantity +
-			"Price:" + price +
-			"Total:" + prd.totals()
-		);
-		
-		
-		String msg_ = "Product Added!";
-			JOptionPane.showMessageDialog(null,
-						msg_, 
-						"CSIMES - Product", 
-						JOptionPane.INFORMATION_MESSAGE,
-						new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
-		);
-		
-		table.setModel(
-			new DefaultTableModel(this.getTable(), new String[]{"Product ID", "Category", "Product", "Quantity", "Price", "Total Amount"})
-		);
-		
+	
+	public MAINPAGE(Page page, Account acc) {
+		Initialize.LockFile();
+		this.page = page;
+		this.acc = acc;
+		this.setFrame();
 	}
 	
-	public Object[][] getTable() {
-		ArrayList<Object[]> arryR = new ArrayList<Object[]>();
-		ArrayList<Integer> maxID = new ArrayList<Integer>();
-		
-		for (File file : Initialize.invenFile.listFiles()) {
-			Object[] objr = new Object[6];
-			Product prd = ProductIO.read(file.getAbsolutePath());
-			
-			objr[0] = prd.productID;
-			objr[1] = prd.category;
-			objr[2] = prd.name;
-			objr[3] = prd.quantity;
-			objr[4] = prd.price;
-			objr[5] = prd.totals();
-			
-			maxID.add(prd.productID);
-			
-			arryR.add(objr);
-			
-		};
+	public void backToLogin() {
+		RegisterPage rp = new RegisterPage(Initialize.pages.get("credentials"));
+		rp.root.clean();
 
-		if (!maxID.isEmpty()) {
-			this.maxID_ = Collections.max(maxID);
-		}
+		LoginPage lp = new LoginPage(Initialize.pages.get("credentials"));
+		lp.paints();
 		
-		Object[][] rlObj = new Object[arryR.size()][6];
-		
-		for (int i=0; i < arryR.size(); i++) {
-			for (int j=0; j < arryR.get(i).length; j++) {
-				rlObj[i][j] = arryR.get(i)[j];
+		this.page.clean();
+		this.page.dispose();
+		Initialize.pages.remove("MAIN");
+		Initialize.pages.put("MAIN", new Page("MAIN"));
+		Initialize.pages.get("MAIN").clean();
+
+		lp.page.setVisible(true);
+		lp.page.repaint();
+	}
+	
+	public void setFrame() {
+		this.page.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				mOffset = e.getPoint();
 			}
-		}
+		});
+		this.page.addMouseMotionListener(new MouseAdapter() {
+			public void mouseDragged(MouseEvent e) {
+				if (mOffset.y < (int) (((float) rootHeight) * 0.08)) {
+					int x_ = e.getXOnScreen() - mOffset.x;
+					int y_ = e.getYOnScreen() - mOffset.y;
+					page.setLocation(x_, y_);
+				}
+			}
+		});
 		
-		return rlObj;
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+		this.rootWidth = (int) (((float) dimension.width) * 0.8);
+		this.rootHeight = (int) (((float) dimension.height) * 0.8);
+		
+		System.out.printf("W: %d H: %d \n", this.rootWidth, this.rootHeight);
+		
+		this.page.getContentPane().setBackground(new Color(240, 240, 240));
+		this.page.setTitle("CSIMES - Dashboard");
+		this.page.setSize(this.rootWidth, this.rootHeight);
+		this.page.setLocationRelativeTo(null);
+		this.page.setUndecorated(true);
+		this.page.setLayout(null);
+		this.page.setIconImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_cropped.png")).getImage());
+		this.page.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.page.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent we) {
+					String msg_ = "Do you wish to exit?";
+					int stat_ = JOptionPane.showOptionDialog(null,
+								msg_, 
+								"CSIMES - Exiting Dashboard", 
+								JOptionPane.YES_NO_OPTION, 
+								JOptionPane.QUESTION_MESSAGE,
+								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
+								new String[]{"Exit", "Cancel"},
+								"Cancel"
+					);
+					if (stat_ == 0) {
+						JFrame root = (JFrame) we.getSource();
+						Initialize.LockFile(true);
+						root.dispose();
+				}
+			}
+			
+			public void windowClosed(WindowEvent we) {
+				Initialize.LockFile(true);
+			}
+		});
 	}
 	
 	
@@ -161,25 +161,35 @@ public class MAINPAGE {
 		int btnW = (int) (((float) this.rootHeight) * 0.08);
 		int btnH = (int) (((float) this.rootHeight) * 0.05);
 		
-		// TABLE YAWA AAAHHHH
-		// int ttX = (int) (((float) this.rootWidth) * 0.28);
-		int ttX = (int) (((float) this.rootWidth) * 0.18);
-		int ttY = (int) (((float) this.rootHeight) * 0.14);
-		int ttW = (int) (((float) this.rootWidth) * 0.62);
-		int ttH =  (int) (((float) this.rootHeight) * 0.76);
+		Sidebars sidebar = this.sidebars();
+
+		Sidebars mp_one = this.createMainPane("stock");
 		
 		this.table = new JTable();
 		this.spane = new JScrollPane(table);
-		
+
 		table.setModel(
-			new DefaultTableModel(this.getTable(), new String[]{"Product ID", "Category", "Product", "Quantity", "Price", "Total Amount"})
+			new DefaultTableModel(null, new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+		);
+
+		this.spane = new JScrollPane(table);
+		this.spane.setName("tablespane");
+		
+		Rectangle mpR = mp_one.getBounds();
+		
+		Rectangle tR = new Rectangle(
+			(int) (((float) mpR.width) * 0.02),
+			(int) (((float) mpR.height) * 0.131),
+			(int) (((float) mpR.width) * 0.961),
+			(int) (((float) mpR.height) * 0.819)
 		);
 		
+		this.spane.setBounds(tR);
+		mp_one.add(spane);
+		this.components.put(this.spane.getName(), this.spane);
 		
-		this.spane.setBounds(new Rectangle(ttX, ttY, ttW, ttH));
-		this.page.getContentPane().add(spane);
 		
-		
+		this.mainPanel = mp_one;
 		
 		JLabel ex = this.createLabel(
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/x.png").getImage(), exW, exH)), 
@@ -190,38 +200,58 @@ public class MAINPAGE {
 			"title", new Rectangle(logX, logY, logW, logH), "csimes_full");
 		JLabel ham_ = this.createLabel(
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/hamburger.png").getImage(), hamW, hamH)), 
-			"hamburger", new Rectangle(hamX, hamY, hamW, hamH), "hamburger");
+			"hamburger", new Rectangle(hamX, hamY, hamW, hamH), "hamburger"
+			);
 		
-		JPanel sidebar = this.sidebars();
-		
-		JButton btn_ = new JButton("ADD");
-		btn_.setBounds(btnX, btnY, btnW, btnH);
-		btn_.setBorder(null);
-		btn_.addActionListener(new ActionListener() {
+		ham_.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("alt S"), "hamburgershowAction");
+		ham_.getActionMap().put("hamburgershowAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				writeProduct();
+				ham_.dispatchEvent(new MouseEvent(ham_, MouseEvent.MOUSE_PRESSED,
+				System.currentTimeMillis(), 0, 0, 0, 1, false, MouseEvent.BUTTON1));
 			}
 		});
-		this.page.getContentPane().add(btn_);
+		
 		
 		JLabel titL = this.createLabel(false, "Dave Housing & Construction Supplies IMES", tFont, new Rectangle(tX, tY, tW, tH));
-		
 		JLabel greyBg = this.createLabel("greybg", new Rectangle(greyBgX, greyBgY, greyBgW, greyBgH), 144, 142, 151);
 	}
+
 	
-	public JPanel sidebars() {
-		JPanel panel = new JPanel();
+	public Sidebars sidebars() {
+		Sidebars panel = new Sidebars(0 - (int) (((float) this.rootWidth) * 0.25), 0);
 		panel.setName("sidebar");
 		panel.setBackground(new Color(144, 142, 151));
 		panel.setLayout(null);
-		panel.setVisible(false);
+		panel.setVisible(true);
+		
+		panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control L"), "logoutAction");
+		panel.getActionMap().put("logoutAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (panel.isShown) {
+					String msg_ = "Are you sure you want to logout?";
+					int stat_ = JOptionPane.showConfirmDialog(null,
+								msg_, 
+								"CSIMES - Logout", 
+								JOptionPane.YES_NO_OPTION, 
+								JOptionPane.QUESTION_MESSAGE,
+								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+					);
+
+					if ((stat_ == 0)) {
+						backToLogin();
+					}
+				}
+			}
+		});
 		
 		// Panel rect              
-		int sX = 0;
+		int sX = 0 - (int) (((float) this.rootWidth) * 0.22);
 		int sY = (int) (((float) this.rootHeight) * 0.09);
 		int sW = (int) (((float) this.rootWidth) * 0.22);
 		int sH = this.rootHeight;
 		
+		System.out.printf("W: %d H: %d \n", sW, sH);
+				
 		// User logo Rect
 		int usX = (int) (((float) sW) * 0.15);
 		int usY = (int) (((float) this.rootHeight) * 0.04);
@@ -240,14 +270,119 @@ public class MAINPAGE {
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/user.png").getImage(), usW, usH)), 
 			"userlogo", new Rectangle(usX, usY, usW, usH), "user");
 		
-		JLabel accT = this.createLabel(false, panel, acc.accTypes.get(Integer.valueOf("" + acc.getAccountType())), acFont, new Rectangle(acX, acY, acW, acH));
+		String accN = "";
+		switch (acc.accTypes.get(Integer.valueOf("" + acc.getAccountType()))) {
+			case "admin":
+				accN = "Admin"; break;
+			case "owner":
+				accN = "Owner"; break;
+			case "staff":
+				accN = "Staff"; break;
+		}
+		
+		JLabel accT = this.createLabel(false, panel, accN, acFont, new Rectangle(acX, acY, acW, acH));
+		
 		
 		panel.setBounds(new Rectangle(sX, sY, sW, sH));
 		this.page.getContentPane().add(panel);
 		this.components.put(panel.getName(), panel);
 		
+		JPanel logoutPanel = this.createSideBarPane(panel, "logout", 0.77f, 0.059f, new Color(144, 142, 151), new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				String msg_ = "Are you sure you want to logout?";
+				int stat_ = JOptionPane.showConfirmDialog(null,
+							msg_, 
+							"CSIMES - Logout", 
+							JOptionPane.YES_NO_OPTION, 
+							JOptionPane.QUESTION_MESSAGE,
+							new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+
+				if ((stat_ == 0)) {
+					backToLogin();
+				}
+			}
+			
+			public void mouseEntered(MouseEvent e) {
+				((JPanel) e.getSource()).setBackground(new Color(184, 185, 190));
+			}
+			
+			public void mouseExited(MouseEvent e) {
+				((JPanel) e.getSource()).setBackground(new Color(144, 142, 151));
+			}
+		});
+		plotSideBarPane(logoutPanel, "icons/logout.png", "Logout");
+		
 		return panel;
 	}
+	
+	public Sidebars createMainPane(String name) {
+		int x = (int) (((float) this.rootWidth) * 0.117);
+		int y = (int) (((float) this.rootHeight) * 0.111);
+		int w = (int) (((float) this.rootWidth) * 0.766);
+		int h = (int) (((float) this.rootHeight) * 0.808);
+		
+		Sidebars mp = new Sidebars(x, (int) (((float) this.rootWidth) * 0.223));
+		mp.setVisible(true);
+		mp.setLayout(null);
+		mp.setName(name);		
+		
+		mp.setBounds(x, y, w, h);
+		this.page.getContentPane().add(mp);
+		
+		return mp;
+	}
+	
+	public JPanel createSideBarPane(JPanel sb, String name, float yp, float hp, Color color, MouseAdapter ma) {
+		Rectangle sbRect = sb.getBounds();
+		System.out.println("" + sbRect.width + ":" + sbRect.height);
+		int x = 0;
+		int y = (int) (((float) sbRect.height) * yp);
+		int h = (int) (((float) sbRect.height) * hp);
+		int w = sbRect.width;
+		
+		JPanel panels = new JPanel();
+		panels.setLayout(null);
+		panels.setBounds(x, y, w, h);
+		panels.setBackground(color);
+		panels.setVisible(true);
+		panels.addMouseListener(ma);
+		
+		sb.add(panels);
+		sb.setComponentZOrder(panels, 0);
+		sidebarPanels.put(name, panels);
+		
+		return panels;
+	}
+	
+	public void plotSideBarPane(JPanel sbp, String icon, String labelText) {
+		Rectangle sbpB = sbp.getBounds();
+		JLabel iconL = new JLabel();
+		
+		int iconX = (int) (((float) sbpB.width) * 0.23);
+		int iconY = (int) (((float) sbpB.height) * 0.18);
+		int iconH = (int) (((float) sbpB.height) * 0.63);
+		
+		iconL.setIcon(new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile(icon)).getImage(), iconH, iconH)));
+		iconL.setBounds(iconX, iconY, iconH, iconH);
+		iconL.setOpaque(false);
+		
+		JLabel textL = new JLabel(labelText);
+		textL.setForeground(Color.black);
+		textL.setOpaque(false);
+		
+		int txtX = (int) (((float) sbpB.width) * 0.37);
+		int txtY = (int) (((float) sbpB.height) * 0.18);
+		int txtW = (int) (((float) sbpB.width) * 0.44);
+		textL.setFont(new Font("Arial", Font.BOLD, (int) (((float) iconH) * 0.72)));
+		textL.setBounds(txtX, txtY, txtW, iconH);
+		
+		sbp.add(iconL);
+		sbp.add(textL);
+		
+		sbp.repaint();
+	}
+	
 	
 	public JLabel createLabel(boolean isText, String name, int fontSize, Rectangle labelRect) {
 		JLabel label = new JLabel(name);
@@ -270,6 +405,7 @@ public class MAINPAGE {
 		return label;
 	}
 	
+	
 	public JLabel createLabel(boolean isText, JPanel panel, String name, int fontSize, Rectangle labelRect) {
 		JLabel label = new JLabel(name);
 		
@@ -291,11 +427,12 @@ public class MAINPAGE {
 		return label;
 	}
 	
+	
 	public JLabel createLabel(ImageIcon icon, String name, Rectangle rect, String iconType) {
 		JLabel label = new JLabel();
 		label.setName(name);
 		label.setIcon(icon);
-		label.addMouseListener(new MainMouse(page, label, this.spane, iconType, this.components));
+		label.addMouseListener(new MainMouse(page, this.mainPanel, label, this.spane, iconType, this.components));
 		
 		this.page.getContentPane().add(label);
 		label.setBounds(rect);
@@ -304,11 +441,12 @@ public class MAINPAGE {
 		return label;
 	}
 	
+	
 	public JLabel createLabel(JPanel panel, ImageIcon icon, String name, Rectangle rect, String iconType) {
 		JLabel label = new JLabel();
 		label.setName(name);
 		label.setIcon(icon);
-		label.addMouseListener(new MainMouse(page, label, this.spane, iconType, this.components));
+		label.addMouseListener(new MainMouse(page, this.mainPanel, label, this.spane, iconType, this.components));
 		
 		panel.add(label);
 		label.setBounds(rect);
@@ -316,6 +454,7 @@ public class MAINPAGE {
 		
 		return label;
 	}
+	
 	
 	public JLabel createLabel(String name, Rectangle rect, int... rgb) {
 		JLabel label = new JLabel();
@@ -330,66 +469,58 @@ public class MAINPAGE {
 		
 		return label;
 	}
-	
-	public MAINPAGE(Page page, Account acc) {
-		this.page = page;
-		this.acc = acc;
-		this.setFrame();
-	}
-	
-	
-	public void setFrame() {
-		this.page.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				mOffset = e.getPoint();
-			}
-		});
-		this.page.addMouseMotionListener(new MouseAdapter() {
-			public void mouseDragged(MouseEvent e) {
-				if (mOffset.y < (int) (((float) rootHeight) * 0.08)) {
-					int x_ = e.getXOnScreen() - mOffset.x;
-					int y_ = e.getYOnScreen() - mOffset.y;
-					page.setLocation(x_, y_);
-				}
-			}
-		});
-		
-		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-		this.rootWidth = (int) (((float) dimension.width) * 0.8);
-		this.rootHeight = (int) (((float) dimension.height) * 0.8);
-		
-		this.page.getContentPane().setBackground(new Color(240, 240, 240));
-		this.page.setTitle("CSIMES - Dashboard");
-		this.page.setSize(this.rootWidth, this.rootHeight);
-		this.page.setLocationRelativeTo(null);
-		this.page.setUndecorated(true);
-		this.page.setLayout(null);
-		this.page.setIconImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_cropped.png")).getImage());
-		this.page.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		this.page.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent we) {
-					String msg_ = "Do you wish to exit?";
-					int stat_ = JOptionPane.showOptionDialog(null,
-								msg_, 
-								"CSIMES - Exiting Dashboard", 
-								JOptionPane.YES_NO_OPTION, 
-								JOptionPane.QUESTION_MESSAGE,
-								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
-								new String[]{"Exit", "Cancel"},
-								"Cancel"
-					);
-					if (stat_ == 0) {
-						JFrame root = (JFrame) we.getSource();
-						Initialize.LockFile(true);
-						root.dispose();
-				}
-			}
-			
-			public void windowClosed(WindowEvent we) {
-				Initialize.LockFile(true);
-			}
-		});
-	}
-}
 
+	
+	public JTextField createTextField(Sidebars sb, String name, int fontSize, Rectangle fieldRect, MultiListener listener) {
+		JTextField textField = new JTextField();
+		DocumentFilter dfilter = new DocumentLimiter(16);
+		
+		DocumentFilter oldFilter = ((AbstractDocument)textField.getDocument()).getDocumentFilter();
+		if (oldFilter != null) {
+			((AbstractDocument)textField.getDocument()).setDocumentFilter(null);
+		}
+		
+		((AbstractDocument)textField.getDocument()).setDocumentFilter(dfilter);
+		((AbstractDocument)textField.getDocument()).putProperty("parent", textField);
+		
+		textField.setName(name);
+		textField.setPreferredSize(new Dimension(fieldRect.width, fieldRect.height));
+		textField.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		textField.setBounds(fieldRect);
+		textField.setOpaque(false);
+		textField.setForeground(Color.black);
+		textField.setCaretColor(Color.black);
+		textField.setHorizontalAlignment(JTextField.LEFT);
+		textField.setFocusable(true);
+		textField.setBorder(BorderFactory.createMatteBorder(0, 0, (int) ((float) fieldRect.height * 0.05), 0, Color.black));
+		
+		textField.addActionListener(listener);
+		((AbstractDocument)textField.getDocument()).addDocumentListener(rl);
+		
+		textField.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (textField.getText().trim().equals("Username")) {
+						textField.setText("");
+					}
+					
+					textField.setForeground(Color.white);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (textField.getText().trim().equals("")) {
+						textField.setText("Username");
+					}
+					
+					textField.setForeground(Color.lightGray);
+				}
+			});
+		
+		this.page.getContentPane().add(textField);
+		this.components.put(textField.getName(), textField);
+		
+		return textField;
+	}
+
+}

@@ -1,43 +1,58 @@
+package net.csimes.temp;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
 public class Sidebars extends JPanel {
-    private int startX, startY, endX, endY;
-    private Timer timer;
-    private int stepSize = 5;
-    
-    public Sidebars(Point starts, Point ends) {
-        this.startX = starts.x;
-        this.startY = starts.y;
-        this.endX = ends.x;
-        this.endY = ends.y;
-        timer = new Timer(0, new ActionListener() {
-            int dx = (endX - startX > 0) ? stepSize : -stepSize;
-            int dy = (endY - startY > 0) ? stepSize : -stepSize;
+	public int sX, eX;
+	public boolean isShown = false;
+	public int vel = 4;
+	public Timer timer;
+	
+	public Sidebars(int sx, int ex) {
+		this.sX = sx;
+		this.eX = ex;
+		Timer timers = new Timer(5, new ActionListener() {
 			
-            public void actionPerformed(ActionEvent e) {
-                int x = getLocation().x;
-                int y = getLocation().y;
-                if ((dx > 0 && x + dx < endX) || (dx < 0 && x + dx > endX)) {
-                    x += dx;
-                } else {
-                    x = endX;
-                }
-                if ((dy > 0 && y + dy < endY) || (dy < 0 && y + dy > endY)) {
-                    y += dy;
-                } else {
-                    y = endY;
-                }
-                setLocation(x, y);
-                if (getLocation().equals(new Point(endX, endY))) {
-                    timer.stop();
-                }
-            }
-        });
-    }
-    
-    public void shows() {
-        timer.start();
-    }
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Timer tx = (Timer) e.getSource();
+				
+				if (vel < 40) {
+					vel += 4;
+				};
+				
+				int curX = getLocation().x;
+				
+				if (curX < sX) {
+					vel = 3;
+					setLocation(sX, getLocation().y);
+					isShown = false;
+					tx.stop();
+				} else if (curX >= eX) {
+					vel = 3;
+					setLocation(eX, getLocation().y);
+					isShown = true;
+					tx.stop();
+					
+					System.out.println("Shown");
+				} 
+				
+				
+				if (isShown == false) {
+					int newX = getLocation().x + vel;
+					setLocation(newX, getLocation().y);
+				} else {
+					int newX = getLocation().x - vel;
+					setLocation(newX, getLocation().y);
+				}				
+			}
+		});
+		this.timer = timers;
+	}
+	
+	public void runs() {
+		this.timer.start();
+	}
 }
