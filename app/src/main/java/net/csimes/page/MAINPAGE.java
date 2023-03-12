@@ -19,6 +19,7 @@ import net.csimes.page.*;
 import net.csimes.temp.*;
 import net.csimes.util.*;
 import net.csimes.mouse.*;
+import net.csimes.table.*;
 import net.csimes.audio.*;
 import net.csimes.splash.*;
 import net.csimes.listeners.*;
@@ -166,10 +167,11 @@ public class MAINPAGE {
 		Sidebars mp_one = this.createMainPane("stock");
 		
 		this.table = new JTable();
-		this.spane = new JScrollPane(table);
+		JTableHeader header = this.table.getTableHeader();
+        header.setDefaultRenderer(new CHeaderRenderer());
 
 		table.setModel(
-			new DefaultTableModel(null, new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+			new CTableModel(null, new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
 		);
 
 		this.spane = new JScrollPane(table);
@@ -188,8 +190,23 @@ public class MAINPAGE {
 		mp_one.add(spane);
 		this.components.put(this.spane.getName(), this.spane);
 		
+		Rectangle sR = new Rectangle(
+			(int) (((float) mpR.width) * 0.742),
+			(int) (((float) mpR.height) * 0.056),
+			(int) (((float) mpR.width) * 0.221),
+			(int) (((float) mpR.height) * 0.05)
+		);
+		
+		Dimension sLD = new Dimension(
+			(int) (((float) mpR.width) * 0.025),
+			(int) (((float) mpR.height) * 0.040)
+		);
+		
+		JTextField searchF = this.createTextField(mp_one, "search", (int) (((float) sR.height) * 0.65), sR, null);
+		JLabel searchLogo = this.createLabel(searchF, new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/user.png").getImage(), sLD.width, sLD.height)), "searchL", sLD);
 		
 		this.mainPanel = mp_one;
+		mp_one.repaint();
 		
 		JLabel ex = this.createLabel(
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/x.png").getImage(), exW, exH)), 
@@ -442,6 +459,19 @@ public class MAINPAGE {
 	}
 	
 	
+	public JLabel createLabel(JTextField parent, ImageIcon icon, String name, Dimension rect) {
+		JLabel label = new JLabel();
+		label.setHorizontalAlignment(SwingConstants.RIGHT);
+		label.setName(name);
+		label.setIcon(icon);
+		
+		parent.add(label, BorderLayout.EAST);
+		label.setSize(rect);
+		
+		return label;
+	}
+	
+	
 	public JLabel createLabel(JPanel panel, ImageIcon icon, String name, Rectangle rect, String iconType) {
 		JLabel label = new JLabel();
 		label.setName(name);
@@ -471,7 +501,7 @@ public class MAINPAGE {
 	}
 
 	
-	public JTextField createTextField(Sidebars sb, String name, int fontSize, Rectangle fieldRect, MultiListener listener) {
+	public JTextField createTextField(Sidebars sb, String name, int fontSize, Rectangle fieldRect, SearchListener listener) {
 		JTextField textField = new JTextField();
 		DocumentFilter dfilter = new DocumentLimiter(16);
 		
@@ -488,36 +518,39 @@ public class MAINPAGE {
 		textField.setFont(new Font("Arial", Font.PLAIN, fontSize));
 		textField.setBounds(fieldRect);
 		textField.setOpaque(false);
-		textField.setForeground(Color.black);
+		textField.setLayout(new BorderLayout());
+		textField.setForeground(Color.BLACK);
 		textField.setCaretColor(Color.black);
 		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.setFocusable(true);
 		textField.setBorder(BorderFactory.createMatteBorder(0, 0, (int) ((float) fieldRect.height * 0.05), 0, Color.black));
 		
 		textField.addActionListener(listener);
-		((AbstractDocument)textField.getDocument()).addDocumentListener(rl);
+		((AbstractDocument)textField.getDocument()).addDocumentListener(listener);
 		
 		textField.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
 				@Override
 				public void focusGained(FocusEvent e) {
-					if (textField.getText().trim().equals("Username")) {
+					if (textField.getText().trim().equals("Search")) {
 						textField.setText("");
 					}
 					
-					textField.setForeground(Color.white);
+					textField.setForeground(Color.BLACK);
 				}
 				
 				@Override
 				public void focusLost(FocusEvent e) {
 					if (textField.getText().trim().equals("")) {
-						textField.setText("Username");
+						textField.setText("Search");
 					}
 					
 					textField.setForeground(Color.lightGray);
 				}
 			});
 		
-		this.page.getContentPane().add(textField);
+		textField.setFocusable(false);
+		
+		sb.add(textField);
 		this.components.put(textField.getName(), textField);
 		
 		return textField;
