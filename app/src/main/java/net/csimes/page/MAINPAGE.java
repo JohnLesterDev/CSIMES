@@ -36,11 +36,16 @@ public class MAINPAGE {
 	
 	private JTable table;
 	private Sidebars mainPanel;
-	private JScrollPane spane;
-	public static int maxID_ = 0;
+	public static int maxID = 0;
 	
 	public HashMap<String,Component> components = new HashMap<String,Component>();
 	public HashMap<String,JPanel> sidebarPanels = new HashMap<String,JPanel>();
+	public static HashMap<Integer,Product> prds = new HashMap<Integer,Product>();
+	
+	
+	//Stock content interchanger
+	public JScrollPane spane;
+	public JLabel snoCon;
 	
 	
 	public MAINPAGE(Page page, Account acc) {
@@ -49,6 +54,7 @@ public class MAINPAGE {
 		this.acc = acc;
 		this.setFrame();
 	}
+	
 	
 	public void backToLogin() {
 		RegisterPage rp = new RegisterPage(Initialize.pages.get("credentials"));
@@ -67,25 +73,31 @@ public class MAINPAGE {
 		lp.page.repaint();
 	}
 	
-	public Object[][] getProducts() {
+	
+	public static Object[][] getProducts() {
 		ArrayList<ArrayList<Object>> arryB = new ArrayList<ArrayList<Object>>();
 		ArrayList<Integer> arryID = new ArrayList<Integer>();
+		arryID.add(MAINPAGE.maxID);
 		
 		File[] files = Initialize.invenFile.listFiles();
 		
 		if (files != null && files.length > 0) {
 			for (File file : files) {
-				Product prd = new SecurityControl(ProductIO.read(file.getAbsolutePath())).decryptProduct();
+				Product prd = ProductIO.read(file.getAbsolutePath());
 				
 				ArrayList<Object> arry = new ArrayList<Object>();
-				for (int i = 0; i < prd.obj.length; i++) {				
-					if (i == 0) {
-						arryID.add((Integer) prd.obj[i]);
-						arry.add(prd.obj[i]);
-					} else {
-						arry.add(prd.obj[i]);
-					}
+				
+				if (!MAINPAGE.prds.containsKey((Integer) prd.productID)) {
+					MAINPAGE.prds.put((Integer) prd.productID, prd);
 				}
+				
+				arry.add(String.format("%06d", prd.productID));
+				arryID.add(prd.productID);
+				arry.add(prd.category);
+				arry.add(prd.name);
+				arry.add(prd.quantity);
+				arry.add(String.format("%.2f", prd.price));
+				arry.add(String.format("%.2f", prd.total));
 				
 				MAINPAGE.maxID =  Collections.max(arryID).intValue();
 				arryB.add(arry);
@@ -99,11 +111,282 @@ public class MAINPAGE {
 				}
 			}
 			
+			Arrays.sort(obj, Comparator.comparingInt(a -> Integer.parseInt((String) a[0])));
+			
 			return obj;
 		} else {
 			return null;
 		}
 	}
+	
+	public static String[] getCategories() {
+		ArrayList<String> arryB = new ArrayList<String>();
+		File[] files = Initialize.invenFile.listFiles();
+		
+		if (files != null && files.length > 0) {
+			for (File file : files) {
+				Product prd = ProductIO.read(file.getAbsolutePath());
+				if (!arryB.contains(prd.category)) {
+					arryB.add(prd.category);
+				}
+			};
+			
+			String[] strA = new String[arryB.size()];
+			for (int i = 0; i < strA.length; i++) {
+				strA[i] = (String) arryB.get(i);
+			}
+			
+			return strA;
+		} else {
+			return new String[]{""};
+		}
+	}
+	
+	public void deleteProduct(Integer id, int selectedRow) {
+		try {
+			if (!MAINPAGE.prds.get(id).filePath.delete()) {
+				JOptionPane.showMessageDialog(
+					null,
+					"An error occured while deleting the product.",
+					"CSIMES - Delete Product Failed",
+					JOptionPane.INFORMATION_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+			} else {
+				MAINPAGE.prds.remove(id);
+				JOptionPane.showMessageDialog(
+					null,
+					"Product deleted successfully",
+					"CSIMES - Delete Product Successful",
+					JOptionPane.INFORMATION_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+			}
+			
+			    DefaultTableModel model = (DefaultTableModel) table.getModel();
+                model.removeRow(selectedRow);
+                table.setModel(
+				new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+				);
+				
+			
+			mainPanel.repaint();
+			table.repaint();
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(
+					null,
+					"An error occured while deleting the product.",
+					"CSIMES - Delete Product Failed",
+					JOptionPane.INFORMATION_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+		}
+	}
+	
+	public void searchProduct(Object[][] data, String matcher) {
+		ArrayList<Object[]> arryRes = new ArrayList<Object[]>();
+	}
+	
+	public void deleteRowFromTable() {
+		int selectedRow = table.getSelectedRow();
+        if (selectedRow != -1) {
+			String sst = (String) table.getValueAt(selectedRow, 0);
+			Integer id = Integer.valueOf(sst);
+
+            String msg_ = "Do you wish to delete this Product? (ID: " + id + ")";
+			int confirmation = JOptionPane.showOptionDialog(null,
+								msg_, 
+								"CSIMES - Delete Product", 
+								JOptionPane.YES_NO_OPTION, 
+								JOptionPane.QUESTION_MESSAGE,
+								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
+								new String[]{"Yes", "Cancel"},
+								"Cancel"
+					);
+            if (confirmation == JOptionPane.YES_OPTION) {
+				this.deleteProduct(id, selectedRow);
+			}
+        } else {
+			JOptionPane.showMessageDialog(
+					null,
+					"Please select a product to delete.",
+					"CSIMES - Delete Product Failed",
+					JOptionPane.INFORMATION_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+		}
+	}
+	
+	public void insertProduct() {
+		JPanel addP = new JPanel();
+		addP.setVisible(true);
+		addP.setLayout(new GridLayout(4, 1));
+		
+		JComboBox<String> cbc = new JComboBox<String>(MAINPAGE.getCategories());
+		cbc.setEditable(true);
+		cbc.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JComboBox) e.getSource()).transferFocus();
+			}
+		});
+		
+		JTextField desc = new JTextField();
+		JTextField quan = new JTextField();
+		JTextField prc = new JTextField();
+		
+		desc.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (desc.getText().trim().equals("Description")) {
+						desc.setText("");
+					}
+					
+					desc.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (desc.getText().trim().equals("")) {
+						desc.setText("Description");
+					}
+					
+					desc.setForeground(Color.gray);
+				}
+			});
+		desc.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JTextField) e.getSource()).transferFocus();
+			}
+		});
+		
+		quan.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+					e.consume();
+				}
+			}
+		});
+		quan.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (quan.getText().trim().equals("Quantity")) {
+						quan.setText("");
+					}
+					
+					quan.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (quan.getText().trim().equals("")) {
+						quan.setText("Quantity");
+					}
+					
+					quan.setForeground(Color.gray);
+				}
+			});
+		quan.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JTextField) e.getSource()).transferFocus();
+			}
+		});
+		
+		prc.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if (!(Character.isDigit(c) || c == '.' || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+					e.consume();
+				}
+				String text = prc.getText();
+				if (text.contains(".") && c == '.') {
+					e.consume();
+				}
+			}
+		});
+		prc.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (prc.getText().trim().equals("Price")) {
+						prc.setText("");
+					}
+					
+					prc.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (prc.getText().trim().equals("")) {
+						prc.setText("Price");
+					}
+					
+					prc.setForeground(Color.gray);
+				}
+			});
+		prc.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JTextField) e.getSource()).transferFocus();
+			}
+		});
+		
+		addP.add(cbc);
+		addP.add(desc);
+		addP.add(quan);
+		addP.add(prc);
+		
+		while (true) {
+			int stat = JOptionPane.showOptionDialog(
+				null,
+				addP,
+				"CSIMES - Add Product",
+				JOptionPane.DEFAULT_OPTION,
+				JOptionPane.INFORMATION_MESSAGE,
+				new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 20, 20)),
+				new String[]{"ADD"},
+				"ADD"
+			);
+			cbc.requestFocusInWindow();
+			
+			if (stat == 0 && !cbc.getSelectedItem().equals("") && !desc.getText().equals("") && !quan.getText().equals("") && !prc.getText().equals("")) {
+				
+				Product prd = new SecurityControl(new Product(
+					MAINPAGE.maxID + 1,
+					(String) cbc.getSelectedItem(),
+					desc.getText(),
+					Integer.parseInt(quan.getText()),
+					Float.parseFloat(prc.getText())
+				)).encryptProduct();
+				
+				ProductIO.write(prd, Initialize.invenPath);
+				
+				JOptionPane.showMessageDialog(
+					null,
+					"Product added successfully!",
+					"CSIMES - Add Product Successful",
+					JOptionPane.INFORMATION_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+				
+				table.setModel(
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+				);
+				break;
+			} else {
+				JOptionPane.showMessageDialog(
+					null,
+					"Invalid input detected. Please try again.",
+					"CSIMES - Add Product Error",
+					JOptionPane.ERROR_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+				
+				continue;
+			}
+		}
+		
+	}
+	
 	
 	public void setFrame() {
 		this.page.addMouseListener(new MouseAdapter() {
@@ -205,15 +488,27 @@ public class MAINPAGE {
 		Sidebars mp_one = this.createMainPane("stock");
 		
 		this.table = new JTable();
-		JTableHeader header = this.table.getTableHeader();
-        header.setDefaultRenderer(new CHeaderRenderer());
 
 		table.setModel(
 			new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
 		);
+		
+
+		JTableHeader header = this.table.getTableHeader();
+        header.setDefaultRenderer(new CHeaderRenderer());
+		table.getTableHeader().setReorderingAllowed(false);
+
+		CTableRenderer renderer = new CTableRenderer();
+        renderer.setHorizontalAlignment(SwingConstants.CENTER);
+        table.setDefaultRenderer(Object.class, renderer);
 
 		this.spane = new JScrollPane(table);
 		this.spane.setName("tablespane");
+		mp_one.addMouseListener(new MouseAdapter() {
+			public void mouseEntered(MouseEvent e) {
+				mp_one.requestFocusInWindow();
+			}
+		});
 		
 		Rectangle mpR = mp_one.getBounds();
 		
@@ -227,6 +522,22 @@ public class MAINPAGE {
 		this.spane.setBounds(tR);
 		mp_one.add(spane);
 		this.components.put(this.spane.getName(), this.spane);
+		
+		mp_one.getInputMap().put(KeyStroke.getKeyStroke("control A"), "addPRDAction");
+		mp_one.getActionMap().put("addPRDAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				insertProduct();
+			}
+		});
+		
+		table.getInputMap().put(KeyStroke.getKeyStroke("control alt D"), "delPRDAction");
+		table.getActionMap().put("delPRDAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				deleteRowFromTable();
+			}
+		});
+		
+		
 		
 		mp_one.getInputMap().put(KeyStroke.getKeyStroke("shift alt P"), "upthemeAction");
 		mp_one.getActionMap().put("upthemeAction", new AbstractAction() {
@@ -584,6 +895,9 @@ public class MAINPAGE {
 		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.setFocusable(true);
 		textField.setBorder(BorderFactory.createMatteBorder(0, 0, (int) ((float) fieldRect.height * 0.05), 0, Color.black));
+		
+		textField.setText("Search");
+		textField.setForeground(Color.lightGray);
 		
 		textField.addActionListener(listener);
 		((AbstractDocument)textField.getDocument()).addDocumentListener(listener);

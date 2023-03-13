@@ -19,7 +19,8 @@ public class ProductIO {
 	
 	public static void write(Product  prod, String path) {		
 		try {
-			new File(path + File.separator + prod.name).createNewFile();
+			prod.filePath = new File(path + File.separator + prod.name);
+			prod.filePath.createNewFile();
 			FileOutputStream flOut = new FileOutputStream(path + File.separator + prod.name, false);
 			ObjectOutputStream outObj = new ObjectOutputStream(flOut);
 			outObj.writeObject(prod);

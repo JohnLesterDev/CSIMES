@@ -24,12 +24,22 @@ import net.csimes.splash.*;
 import net.csimes.listeners.*;
 
 
-public class CTableModel extends DefaultTableModel {
-	public CTableModel(Object[][] data, String[] columnNames) {
-		super(data, columnNames);
+public class CTableRenderer extends DefaultTableCellRenderer {
+	
+	private static final Font CELL_FONT = new Font("Corbel", Font.PLAIN, 13);
+
+	
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            // set the font and foreground color of the cell
+            // setFont(CELL_FONT);
+
+            return this;
 	}
 	
 	public boolean isCellEditable(int row, int column) {
         return false; // make all cells not editable
     }
+
 }
