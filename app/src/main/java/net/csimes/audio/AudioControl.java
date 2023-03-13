@@ -9,6 +9,8 @@ public class AudioControl {
 	private static Clip clip;
 
 	public static void play(InputStream is) {
+		AudioControl.stop();
+		
 		try {
 			AudioInputStream ais = AudioSystem.getAudioInputStream(is);
 			if (AudioControl.clip == null) {

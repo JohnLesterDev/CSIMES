@@ -37,7 +37,7 @@ public class MAINPAGE {
 	private JTable table;
 	private Sidebars mainPanel;
 	private JScrollPane spane;
-	public int maxID_ = 0;
+	public static int maxID_ = 0;
 	
 	public HashMap<String,Component> components = new HashMap<String,Component>();
 	public HashMap<String,JPanel> sidebarPanels = new HashMap<String,JPanel>();
@@ -65,6 +65,44 @@ public class MAINPAGE {
 
 		lp.page.setVisible(true);
 		lp.page.repaint();
+	}
+	
+	public Object[][] getProducts() {
+		ArrayList<ArrayList<Object>> arryB = new ArrayList<ArrayList<Object>>();
+		ArrayList<Integer> arryID = new ArrayList<Integer>();
+		
+		File[] files = Initialize.invenFile.listFiles();
+		
+		if (files != null && files.length > 0) {
+			for (File file : files) {
+				Product prd = new SecurityControl(ProductIO.read(file.getAbsolutePath())).decryptProduct();
+				
+				ArrayList<Object> arry = new ArrayList<Object>();
+				for (int i = 0; i < prd.obj.length; i++) {				
+					if (i == 0) {
+						arryID.add((Integer) prd.obj[i]);
+						arry.add(prd.obj[i]);
+					} else {
+						arry.add(prd.obj[i]);
+					}
+				}
+				
+				MAINPAGE.maxID =  Collections.max(arryID).intValue();
+				arryB.add(arry);
+			};
+			
+			Object[][] obj = new Object[arryB.size()][arryB.get(0).size()];
+			
+			for (int k = 0; k < arryB.size(); k++) {
+				for (int j = 0; j < arryB.get(0).size(); j++) {
+					obj[k][j] = arryB.get(k).get(j);
+				}
+			}
+			
+			return obj;
+		} else {
+			return null;
+		}
 	}
 	
 	public void setFrame() {
@@ -171,7 +209,7 @@ public class MAINPAGE {
         header.setDefaultRenderer(new CHeaderRenderer());
 
 		table.setModel(
-			new CTableModel(null, new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+			new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
 		);
 
 		this.spane = new JScrollPane(table);
@@ -190,6 +228,28 @@ public class MAINPAGE {
 		mp_one.add(spane);
 		this.components.put(this.spane.getName(), this.spane);
 		
+		mp_one.getInputMap().put(KeyStroke.getKeyStroke("shift alt P"), "upthemeAction");
+		mp_one.getActionMap().put("upthemeAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				AudioControl.play(ResourceControl.getResourceFileStream("wav/uptheme.wav", true));
+			}
+		});
+		
+		mp_one.getInputMap().put(KeyStroke.getKeyStroke("shift alt L"), "feelAction");
+		mp_one.getActionMap().put("feelAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				AudioControl.play(ResourceControl.getResourceFileStream("wav/feelinggood.wav", true));
+			}
+		});
+		
+		mp_one.getInputMap().put(KeyStroke.getKeyStroke("control alt P"), "noAudioAction");
+		mp_one.getActionMap().put("noAudioAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				AudioControl.stop();
+			}
+		});
+		
+		
 		Rectangle sR = new Rectangle(
 			(int) (((float) mpR.width) * 0.742),
 			(int) (((float) mpR.height) * 0.056),
@@ -203,7 +263,7 @@ public class MAINPAGE {
 		);
 		
 		JTextField searchF = this.createTextField(mp_one, "search", (int) (((float) sR.height) * 0.65), sR, null);
-		JLabel searchLogo = this.createLabel(searchF, new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/user.png").getImage(), sLD.width, sLD.height)), "searchL", sLD);
+		JLabel searchLogo = this.createLabel(searchF, new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/search.png").getImage(), sLD.width, sLD.height)), "searchL", sLD);
 		
 		this.mainPanel = mp_one;
 		mp_one.repaint();
@@ -257,7 +317,7 @@ public class MAINPAGE {
 					if ((stat_ == 0)) {
 						backToLogin();
 					}
-				}
+				}     
 			}
 		});
 		
@@ -547,9 +607,7 @@ public class MAINPAGE {
 					textField.setForeground(Color.lightGray);
 				}
 			});
-		
-		textField.setFocusable(false);
-		
+			
 		sb.add(textField);
 		this.components.put(textField.getName(), textField);
 		
