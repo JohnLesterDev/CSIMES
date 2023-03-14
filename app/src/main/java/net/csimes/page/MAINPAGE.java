@@ -75,6 +75,8 @@ public class MAINPAGE {
 	
 	
 	public static Object[][] getProducts() {
+		MAINPAGE.prds = new HashMap<Integer,Product>();
+		
 		ArrayList<ArrayList<Object>> arryB = new ArrayList<ArrayList<Object>>();
 		ArrayList<Integer> arryID = new ArrayList<Integer>();
 		arryID.add(MAINPAGE.maxID);
@@ -93,11 +95,11 @@ public class MAINPAGE {
 				
 				arry.add(String.format("%06d", prd.productID));
 				arryID.add(prd.productID);
-				arry.add(prd.category);
+				arry.add(prd.category);             
 				arry.add(prd.name);
 				arry.add(prd.quantity);
-				arry.add(String.format("%.2f", prd.price));
-				arry.add(String.format("%.2f", prd.total));
+				arry.add(String.format("$%.2f", prd.price));
+				arry.add(String.format("$%.2f", prd.total));
 				
 				MAINPAGE.maxID =  Collections.max(arryID).intValue();
 				arryB.add(arry);
@@ -184,9 +186,20 @@ public class MAINPAGE {
 		}
 	}
 	
-	public void searchProduct(Object[][] data, String matcher) {
-		ArrayList<Object[]> arryRes = new ArrayList<Object[]>();
+	public void filterRows(String input) {
+		if (!input.equals("Search") && !input.equals("")) {
+			DefaultTableModel model = (DefaultTableModel) this.table.getModel();
+			TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>(model);
+			table.setRowSorter(sorter);
+			sorter.setRowFilter(RowFilter.regexFilter("(?i).*" + input + ".*", 0, 1, 2));
+		} else {
+			table.setRowSorter(null);
+			table.setModel(
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+			);
+		}
 	}
+	
 	
 	public void deleteRowFromTable() {
 		int selectedRow = table.getSelectedRow();
@@ -202,7 +215,7 @@ public class MAINPAGE {
 								JOptionPane.QUESTION_MESSAGE,
 								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
 								new String[]{"Yes", "Cancel"},
-								"Cancel"
+								"Yes"
 					);
             if (confirmation == JOptionPane.YES_OPTION) {
 				this.deleteProduct(id, selectedRow);
@@ -234,6 +247,15 @@ public class MAINPAGE {
 		JTextField desc = new JTextField();
 		JTextField quan = new JTextField();
 		JTextField prc = new JTextField();
+		
+		desc.setText("Description");
+		desc.setForeground(Color.gray);
+		
+		quan.setText("Quantity");
+		quan.setForeground(Color.gray);
+		
+		prc.setText("Price");
+		prc.setForeground(Color.gray);
 		
 		desc.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
 				@Override
@@ -387,6 +409,188 @@ public class MAINPAGE {
 		
 	}
 	
+	public void modifyProduct() {
+		JPanel addP = new JPanel();
+		addP.setVisible(true);
+		addP.setLayout(new GridLayout(4, 1));
+	
+		int selectedRow = table.getSelectedRow();	
+
+		JComboBox<String> cbc = new JComboBox<String>(MAINPAGE.getCategories());
+		cbc.setEditable(true);
+		cbc.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JComboBox) e.getSource()).transferFocus();
+			}
+		});
+		
+		JTextField desc = new JTextField();
+		JTextField quan = new JTextField();
+		JTextField prc = new JTextField();
+		
+		desc.setForeground(Color.gray);
+		quan.setForeground(Color.gray);
+		prc.setForeground(Color.gray);
+		
+		desc.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (desc.getText().trim().equals("Description")) {
+						desc.setText("");
+					}
+					
+					desc.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (desc.getText().trim().equals("")) {
+						desc.setText("Description");
+					}
+					
+					desc.setForeground(Color.gray);
+				}
+			});
+		desc.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JTextField) e.getSource()).transferFocus();
+			}
+		});
+		
+		quan.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+					e.consume();
+				}
+			}
+		});
+		quan.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (quan.getText().trim().equals("Quantity")) {
+						quan.setText("");
+					}
+					
+					quan.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (quan.getText().trim().equals("")) {
+						quan.setText("Quantity");
+					}
+					
+					quan.setForeground(Color.gray);
+				}
+			});
+		quan.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JTextField) e.getSource()).transferFocus();
+			}
+		});
+		
+		prc.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if (!(Character.isDigit(c) || c == '.' || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+					e.consume();
+				}
+				String text = prc.getText();
+				if (text.contains(".") && c == '.') {
+					e.consume();
+				}
+			}
+		});
+		prc.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (prc.getText().trim().equals("Price")) {
+						prc.setText("");
+					}
+					
+					prc.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (prc.getText().trim().equals("")) {
+						prc.setText("Price");
+					}
+					
+					prc.setForeground(Color.gray);
+				}
+			});
+		prc.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JTextField) e.getSource()).transferFocus();
+			}
+		});
+		
+		addP.add(cbc);
+		addP.add(desc);
+		addP.add(quan);
+		addP.add(prc);
+		
+		if (selectedRow != -1) {
+			String sst = (String) table.getValueAt(selectedRow, 0);
+			Integer id = Integer.valueOf(sst);
+			Product prd_ = MAINPAGE.prds.get(id);
+			
+			prd_.filePath.delete();
+			
+			cbc.setSelectedItem((String) prd_.category);
+			desc.setText((String) prd_.name);
+			quan.setText(String.valueOf(prd_.quantity));
+			prc.setText(String.valueOf(prd_.price));
+			
+			int stat = JOptionPane.showOptionDialog(
+				null,
+				addP,
+				"CSIMES - Modify Product",
+				JOptionPane.DEFAULT_OPTION,
+				JOptionPane.INFORMATION_MESSAGE,
+				new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 20, 20)),
+				new String[]{"Modify"},
+				"Modify"
+			);
+			cbc.requestFocusInWindow();
+			
+			if (stat == 0 && !cbc.getSelectedItem().equals("") && !desc.getText().equals("") && !quan.getText().equals("") && !prc.getText().equals("")) {
+				prd_.category = (String) cbc.getSelectedItem();
+				prd_.name = desc.getText();
+				prd_.quantity =  Integer.parseInt(quan.getText());
+				prd_.price = Float.parseFloat(prc.getText());
+				
+				Product prd = new SecurityControl(prd_).encryptProduct();
+
+				ProductIO.write(prd, Initialize.invenPath);
+				
+				JOptionPane.showMessageDialog(
+					null,
+					"Product has been modified successfully!",
+					"CSIMES - Modify Product Successful",
+					JOptionPane.INFORMATION_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+				
+				table.setModel(
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+				);
+				return;
+			} else {
+				JOptionPane.showMessageDialog(
+					null,
+					"Invalid input detected. Please try again.",
+					"CSIMES - Modify Error",
+					JOptionPane.ERROR_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);				
+			}
+		}
+		
+	}
+	
 	
 	public void setFrame() {
 		this.page.addMouseListener(new MouseAdapter() {
@@ -523,17 +727,24 @@ public class MAINPAGE {
 		mp_one.add(spane);
 		this.components.put(this.spane.getName(), this.spane);
 		
-		mp_one.getInputMap().put(KeyStroke.getKeyStroke("control A"), "addPRDAction");
+		mp_one.getInputMap().put(KeyStroke.getKeyStroke("shift alt A"), "addPRDAction");
 		mp_one.getActionMap().put("addPRDAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				insertProduct();
 			}
 		});
 		
-		table.getInputMap().put(KeyStroke.getKeyStroke("control alt D"), "delPRDAction");
+		table.getInputMap().put(KeyStroke.getKeyStroke("shift alt D"), "delPRDAction");
 		table.getActionMap().put("delPRDAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				deleteRowFromTable();
+			}
+		});
+		
+		table.getInputMap().put(KeyStroke.getKeyStroke("shift alt M"), "modPRDAction");
+		table.getActionMap().put("modPRDAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				modifyProduct();
 			}
 		});
 		
@@ -575,6 +786,9 @@ public class MAINPAGE {
 		
 		JTextField searchF = this.createTextField(mp_one, "search", (int) (((float) sR.height) * 0.65), sR, null);
 		JLabel searchLogo = this.createLabel(searchF, new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/search.png").getImage(), sLD.width, sLD.height)), "searchL", sLD);
+		
+		((AbstractDocument)searchF.getDocument()).putProperty("parent", searchF);
+		((AbstractDocument)searchF.getDocument()).addDocumentListener(new SearchListener(table, this));
 		
 		this.mainPanel = mp_one;
 		mp_one.repaint();
