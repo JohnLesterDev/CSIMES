@@ -21,16 +21,25 @@ import net.csimes.listeners.*;
 
 public class SearchListener implements DocumentListener, ActionListener {
 	
+	public JTable table;
+	public MAINPAGE mp_;
+	
+	public SearchListener(JTable table, MAINPAGE mp_) {
+		this.table = table;
+		this.mp_ = mp_;
+	}
+	
 	public void actionPerformed(ActionEvent e) {
 		
 	}
 	
 	public void insertUpdate(DocumentEvent e) {
-		
+		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
+		this.mp_.filterRows(textField.getText());
 	}
 
 	public void removeUpdate(DocumentEvent e) {
-		
+		this.insertUpdate(e);
 	}
 
 	public void changedUpdate(DocumentEvent e) {
