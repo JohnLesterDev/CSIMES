@@ -4,7 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.lang.*;
 import java.text.*;
+import java.time.*;
 import java.security.*;
+import java.time.format.*;
 
 
 
@@ -15,6 +17,7 @@ public class Product implements Serializable {
 	public int quantity;
 	public float price;
 	public float total;
+	public String dateTime;
 	
 	public File filePath;
 	
@@ -28,6 +31,7 @@ public class Product implements Serializable {
 		this.price = Float.parseFloat(String.format("%.2f", price));
 		
 		this.totals();
+		this.dateTimeNow();
 		
 		this.obj = new Object[] {
 			this.productID,
@@ -53,5 +57,14 @@ public class Product implements Serializable {
 		};
 
 		return this.total;
+	}
+	
+	public String dateTimeNow() {
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter ff = DateTimeFormatter.ofPattern("MM/dd/yyyy-hh:mm");
+		
+		this.dateTime = now.format(ff);
+		
+		return this.dateTime;
 	}
 }

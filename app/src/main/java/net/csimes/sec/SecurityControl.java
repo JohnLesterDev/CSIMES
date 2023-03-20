@@ -168,14 +168,12 @@ public class SecurityControl implements Serializable {
 	
 	public Product encryptProduct() {
 		this.prod.name = this.encryptString(this.prod.name).getResult();
-		System.out.println(this.prod.name);
 		this.prod.category = this.encryptString(this.prod.category).getResult();
 		
 		return this.prod;
 	}
 	
 	public Product decryptProduct() {
-		System.out.println(this.prod.name);
 		this.prod.name = this.decryptString(this.prod.name).getResult();
 		this.prod.category = this.decryptString(this.prod.category).getResult();
 		

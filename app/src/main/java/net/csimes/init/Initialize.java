@@ -22,7 +22,7 @@ import net.csimes.splash.*;
 public class Initialize {
 	private static String lockFilePath = System.getProperty("java.io.tmpdir");
 	private static String rootPartition = System.getenv("SystemDrive");
-	private static String rootDir = Initialize.getRootPartition() + File.separator + "CSIMES";
+	public static String rootDir = Initialize.getRootPartition() + File.separator + "CSIMES";
 	public static String rootAccPath = Initialize.rootDir + File.separator + "ACC";
 	public static File accountStat = new File(Initialize.rootDir + File.separator + "ACC");
 	public static File firstUser = new File(Initialize.rootDir + File.separator + "TRUE");
