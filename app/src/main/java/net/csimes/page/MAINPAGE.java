@@ -39,8 +39,9 @@ public class MAINPAGE {
 	public static int maxID = 0;
 	
 	public HashMap<String,Component> components = new HashMap<String,Component>();
-	public HashMap<String,JPanel> sidebarPanels = new HashMap<String,JPanel>();
+	public HashMap<String,SidebarPanel> sidebarPanels = new HashMap<String,SidebarPanel>();
 	public static HashMap<Integer,Product> prds = new HashMap<Integer,Product>();
+	public HashMap<String,Sidebars> mainPanels = new HashMap<String,Sidebars>();
 	
 	
 	//Stock content interchanger
@@ -75,46 +76,17 @@ public class MAINPAGE {
 	
 	
 	public static Object[][] getProducts() {
-		MAINPAGE.prds = new HashMap<Integer,Product>();
+		Object[][] obj = Inventory.getProdsByTable();
 		
-		ArrayList<ArrayList<Object>> arryB = new ArrayList<ArrayList<Object>>();
-		ArrayList<Integer> arryID = new ArrayList<Integer>();
-		arryID.add(MAINPAGE.maxID);
+		if (Inventory.getMaxID() != null) {
+			MAINPAGE.maxID = Inventory.getMaxID();
+		}
 		
-		File[] files = Initialize.invenFile.listFiles();
+		MAINPAGE.prds = Inventory.getProdsByID();
 		
-		if (files != null && files.length > 0) {
-			for (File file : files) {
-				Product prd = ProductIO.read(file.getAbsolutePath());
-				
-				ArrayList<Object> arry = new ArrayList<Object>();
-				
-				if (!MAINPAGE.prds.containsKey((Integer) prd.productID)) {
-					MAINPAGE.prds.put((Integer) prd.productID, prd);
-				}
-				
-				arry.add(String.format("%06d", prd.productID));
-				arryID.add(prd.productID);
-				arry.add(prd.category);             
-				arry.add(prd.name);
-				arry.add(prd.quantity);
-				arry.add(String.format("$%.2f", prd.price));
-				arry.add(String.format("$%.2f", prd.total));
-				
-				MAINPAGE.maxID =  Collections.max(arryID).intValue();
-				arryB.add(arry);
-			};
-			
-			Object[][] obj = new Object[arryB.size()][arryB.get(0).size()];
-			
-			for (int k = 0; k < arryB.size(); k++) {
-				for (int j = 0; j < arryB.get(0).size(); j++) {
-					obj[k][j] = arryB.get(k).get(j);
-				}
-			}
-			
-			Arrays.sort(obj, Comparator.comparingInt(a -> Integer.parseInt((String) a[0])));
-			
+		Inventory.refresh();
+		
+		if (obj != null) {
 			return obj;
 		} else {
 			return null;
@@ -122,31 +94,17 @@ public class MAINPAGE {
 	}
 	
 	public static String[] getCategories() {
-		ArrayList<String> arryB = new ArrayList<String>();
-		File[] files = Initialize.invenFile.listFiles();
-		
-		if (files != null && files.length > 0) {
-			for (File file : files) {
-				Product prd = ProductIO.read(file.getAbsolutePath());
-				if (!arryB.contains(prd.category)) {
-					arryB.add(prd.category);
-				}
-			};
-			
-			String[] strA = new String[arryB.size()];
-			for (int i = 0; i < strA.length; i++) {
-				strA[i] = (String) arryB.get(i);
-			}
-			
-			return strA;
+		Inventory.refresh();
+		if (Inventory.getAllProdCategories() != null) {
+			return Inventory.getAllProdCategories().toArray(new String[]{});
 		} else {
 			return new String[]{""};
 		}
 	}
 	
-	public void deleteProduct(Integer id, int selectedRow) {
+	public void deleteProduct(Integer id) {
 		try {
-			if (!MAINPAGE.prds.get(id).filePath.delete()) {
+			if (!Inventory.removeProductByID(id)) {
 				JOptionPane.showMessageDialog(
 					null,
 					"An error occured while deleting the product.",
@@ -155,7 +113,7 @@ public class MAINPAGE {
 					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
 				);
 			} else {
-				MAINPAGE.prds.remove(id);
+				Inventory.refresh();
 				JOptionPane.showMessageDialog(
 					null,
 					"Product deleted successfully",
@@ -164,13 +122,6 @@ public class MAINPAGE {
 					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
 				);
 			}
-			
-			    DefaultTableModel model = (DefaultTableModel) table.getModel();
-                model.removeRow(selectedRow);
-                table.setModel(
-				new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
-				);
-				
 			
 			mainPanel.repaint();
 			table.repaint();
@@ -195,7 +146,7 @@ public class MAINPAGE {
 		} else {
 			table.setRowSorter(null);
 			table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
 			);
 		}
 	}
@@ -218,7 +169,12 @@ public class MAINPAGE {
 								"Yes"
 					);
             if (confirmation == JOptionPane.YES_OPTION) {
-				this.deleteProduct(id, selectedRow);
+				this.deleteProduct(id);
+				DefaultTableModel model = (DefaultTableModel) table.getModel();
+                model.removeRow(selectedRow);
+                table.setModel(
+				new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+				);
 			}
         } else {
 			JOptionPane.showMessageDialog(
@@ -372,15 +328,14 @@ public class MAINPAGE {
 			
 			if (stat == 0 && !cbc.getSelectedItem().equals("") && !desc.getText().equals("") && !quan.getText().equals("") && !prc.getText().equals("")) {
 				
-				Product prd = new SecurityControl(new Product(
-					MAINPAGE.maxID + 1,
-					(String) cbc.getSelectedItem(),
+				Inventory.insertProduct(
+					cbc.getSelectedItem(),
 					desc.getText(),
 					Integer.parseInt(quan.getText()),
 					Float.parseFloat(prc.getText())
-				)).encryptProduct();
+				);
 				
-				ProductIO.write(prd, Initialize.invenPath);
+				Inventory.refresh();
 				
 				JOptionPane.showMessageDialog(
 					null,
@@ -391,7 +346,7 @@ public class MAINPAGE {
 				);
 				
 				table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
 				);
 				break;
 			} else {
@@ -460,7 +415,7 @@ public class MAINPAGE {
 		quan.addKeyListener(new KeyAdapter() {
 			public void keyTyped(KeyEvent e) {
 				char c = e.getKeyChar();
-				if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+			if (!(Character.isDigit(c) || c == '-' || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
 					e.consume();
 				}
 			}
@@ -535,9 +490,7 @@ public class MAINPAGE {
 		if (selectedRow != -1) {
 			String sst = (String) table.getValueAt(selectedRow, 0);
 			Integer id = Integer.valueOf(sst);
-			Product prd_ = MAINPAGE.prds.get(id);
-			
-			prd_.filePath.delete();
+			Product prd_ = Inventory.getProductByID(id);
 			
 			cbc.setSelectedItem((String) prd_.category);
 			desc.setText((String) prd_.name);
@@ -557,14 +510,15 @@ public class MAINPAGE {
 			cbc.requestFocusInWindow();
 			
 			if (stat == 0 && !cbc.getSelectedItem().equals("") && !desc.getText().equals("") && !quan.getText().equals("") && !prc.getText().equals("")) {
-				prd_.category = (String) cbc.getSelectedItem();
-				prd_.name = desc.getText();
-				prd_.quantity =  Integer.parseInt(quan.getText());
-				prd_.price = Float.parseFloat(prc.getText());
-				
-				Product prd = new SecurityControl(prd_).encryptProduct();
-
-				ProductIO.write(prd, Initialize.invenPath);
+				Inventory.modifyProductByID(
+						id, 
+						cbc.getSelectedItem(), 
+						desc.getText(),
+						Integer.parseInt(quan.getText()),
+						Float.parseFloat(prc.getText())
+					);
+					
+				Inventory.refresh();
 				
 				JOptionPane.showMessageDialog(
 					null,
@@ -575,7 +529,7 @@ public class MAINPAGE {
 				);
 				
 				table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
 				);
 				return;
 			} else {
@@ -621,6 +575,7 @@ public class MAINPAGE {
 		this.page.setLocationRelativeTo(null);
 		this.page.setUndecorated(true);
 		this.page.setLayout(null);
+		this.page.setResizable(false);
 		this.page.setIconImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_cropped.png")).getImage());
 		this.page.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.page.addWindowListener(new WindowAdapter() {
@@ -687,14 +642,14 @@ public class MAINPAGE {
 		int btnW = (int) (((float) this.rootHeight) * 0.08);
 		int btnH = (int) (((float) this.rootHeight) * 0.05);
 		
-		Sidebars sidebar = this.sidebars();
+		Sidebars sidebar = this.sidebars(this.mainPanel);
 
-		Sidebars mp_one = this.createMainPane("stock");
+		Sidebars mp_one = this.createMainPane("inventorypanel");
 		
 		this.table = new JTable();
 
 		table.setModel(
-			new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+			new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
 		);
 		
 
@@ -727,21 +682,21 @@ public class MAINPAGE {
 		mp_one.add(spane);
 		this.components.put(this.spane.getName(), this.spane);
 		
-		mp_one.getInputMap().put(KeyStroke.getKeyStroke("shift alt A"), "addPRDAction");
+		mp_one.getInputMap().put(KeyStroke.getKeyStroke("alt A"), "addPRDAction");
 		mp_one.getActionMap().put("addPRDAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				insertProduct();
 			}
 		});
 		
-		table.getInputMap().put(KeyStroke.getKeyStroke("shift alt D"), "delPRDAction");
+		table.getInputMap().put(KeyStroke.getKeyStroke("alt D"), "delPRDAction");
 		table.getActionMap().put("delPRDAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				deleteRowFromTable();
 			}
 		});
 		
-		table.getInputMap().put(KeyStroke.getKeyStroke("shift alt M"), "modPRDAction");
+		table.getInputMap().put(KeyStroke.getKeyStroke("alt M"), "modPRDAction");
 		table.getActionMap().put("modPRDAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				modifyProduct();
@@ -819,7 +774,7 @@ public class MAINPAGE {
 	}
 
 	
-	public Sidebars sidebars() {
+	public Sidebars sidebars(JPanel CurrentPanel) {
 		Sidebars panel = new Sidebars(0 - (int) (((float) this.rootWidth) * 0.25), 0);
 		panel.setName("sidebar");
 		panel.setBackground(new Color(144, 142, 151));
@@ -889,7 +844,7 @@ public class MAINPAGE {
 		this.page.getContentPane().add(panel);
 		this.components.put(panel.getName(), panel);
 		
-		JPanel logoutPanel = this.createSideBarPane(panel, "logout", 0.77f, 0.059f, new Color(144, 142, 151), new MouseAdapter() {
+		SidebarPanel logoutPanel = this.createSideBarPane(panel, "logout", 0.77f, 0.059f, new Color(144, 142, 151), new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				String msg_ = "Are you sure you want to logout?";
 				int stat_ = JOptionPane.showConfirmDialog(null,
@@ -906,16 +861,169 @@ public class MAINPAGE {
 			}
 			
 			public void mouseEntered(MouseEvent e) {
-				((JPanel) e.getSource()).setBackground(new Color(184, 185, 190));
+				((SidebarPanel) e.getSource()).setBackground(new Color(184, 185, 190));
 			}
 			
 			public void mouseExited(MouseEvent e) {
-				((JPanel) e.getSource()).setBackground(new Color(144, 142, 151));
+				((SidebarPanel) e.getSource()).setBackground(new Color(144, 142, 151));
 			}
 		});
 		plotSideBarPane(logoutPanel, "icons/logout.png", "Logout");
 		
+		
+		SidebarPanel dashPanel = this.createSideBarPane(panel, "dashboard", 0.249f, 0.06f, new Color(87, 85, 94), new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				for (SidebarPanel pp : sidebarPanels.values()) {
+					if (pp.getName().equals("dashboard")) {
+						pp.setBackground(new Color(87, 85, 94));
+						pp.selection = true;
+						switchMainPanel("dashboardpanel");
+					} else {
+						pp.setBackground(new Color(144, 142, 151));
+						pp.selection = false;
+					}
+				}
+			}
+			
+			public void mouseEntered(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(184, 185, 190));
+				}
+			}
+			
+			public void mouseExited(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(144, 142, 151));
+				}
+			}
+		});
+		dashPanel.selection = true;
+		plotSideBarPane(dashPanel, "icons/home.png", "Dashboard");
+		
+		SidebarPanel invPanel = this.createSideBarPane(panel, "inventory", 0.316f, 0.06f, new Color(144, 142, 151), new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				for (SidebarPanel pp : sidebarPanels.values()) {
+					if (pp.getName().equals("inventory")) {
+						pp.setBackground(new Color(87, 85, 94));
+						pp.selection = true;
+						switchMainPanel("inventorypanel");
+					} else {
+						pp.setBackground(new Color(144, 142, 151));
+						pp.selection = false;
+					}
+				}
+			}
+			
+			public void mouseEntered(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(184, 185, 190));
+				}
+			}
+			
+			public void mouseExited(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(144, 142, 151));
+				}
+			}
+		});
+		plotSideBarPane(invPanel, "icons/stock.png", "Inventory");
+		
+		SidebarPanel posPanel = this.createSideBarPane(panel, "transaction", 0.383f, 0.06f, new Color(144, 142, 151), new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				for (SidebarPanel pp : sidebarPanels.values()) {
+					if (pp.getName().equals("transaction")) {
+						pp.setBackground(new Color(87, 85, 94));
+						pp.selection = true;
+						switchMainPanel("transactionpanel");
+					} else {
+						pp.setBackground(new Color(144, 142, 151));
+						pp.selection = false;
+					}
+				}
+			}
+			
+			public void mouseEntered(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(184, 185, 190));
+				}
+			}
+			
+			public void mouseExited(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(144, 142, 151));
+				}
+			}
+		});
+		plotSideBarPane(posPanel, "icons/sell.png", "Transaction");
+		
+		SidebarPanel hisPanel = this.createSideBarPane(panel, "historylog", 0.45f, 0.06f, new Color(144, 142, 151), new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				for (SidebarPanel pp : sidebarPanels.values()) {
+					if (pp.getName().equals("historylog")) {
+						pp.setBackground(new Color(87, 85, 94));
+						pp.selection = true;
+						switchMainPanel("historylogpanel");
+					} else {
+						pp.setBackground(new Color(144, 142, 151));
+						pp.selection = false;
+					}
+				}
+			}
+			
+			public void mouseEntered(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(184, 185, 190));
+				}
+			}
+			
+			public void mouseExited(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(144, 142, 151));
+				}
+			}
+		});
+		plotSideBarPane(hisPanel, "icons/translog.png", "History/Log");
+		
+		SidebarPanel usrsPanel = this.createSideBarPane(panel, "users", 0.518f, 0.06f, new Color(144, 142, 151), new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				for (SidebarPanel pp : sidebarPanels.values()) {
+					if (pp.getName().equals("users")) {
+						pp.setBackground(new Color(87, 85, 94));
+						pp.selection = true;
+						switchMainPanel("userspanel");
+					} else {
+						pp.setBackground(new Color(144, 142, 151));
+						pp.selection = false;
+					}
+				}
+			}
+			
+			public void mouseEntered(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(184, 185, 190));
+				}
+			}
+			
+			public void mouseExited(MouseEvent e) {
+				if (!((SidebarPanel) e.getSource()).isSelected()) {
+					((SidebarPanel) e.getSource()).setBackground(new Color(144, 142, 151));
+				}
+			}
+		});
+		plotSideBarPane(usrsPanel, "icons/multiacc.png", "Users");
+		
+		
 		return panel;
+	}
+	
+	public void switchMainPanel(String panelName) {
+		for (Sidebars mpp : this.mainPanels.values()) {
+			if (mpp.getName().equals(panelName)) {
+				mpp.setVisible(true);
+			} else {
+				mpp.setVisible(false);
+			}
+		}
 	}
 	
 	public Sidebars createMainPane(String name) {
@@ -931,11 +1039,12 @@ public class MAINPAGE {
 		
 		mp.setBounds(x, y, w, h);
 		this.page.getContentPane().add(mp);
+		this.mainPanels.put(name, mp);
 		
 		return mp;
 	}
 	
-	public JPanel createSideBarPane(JPanel sb, String name, float yp, float hp, Color color, MouseAdapter ma) {
+	public SidebarPanel createSideBarPane(JPanel sb, String name, float yp, float hp, Color color, MouseAdapter ma) {
 		Rectangle sbRect = sb.getBounds();
 		System.out.println("" + sbRect.width + ":" + sbRect.height);
 		int x = 0;
@@ -943,7 +1052,8 @@ public class MAINPAGE {
 		int h = (int) (((float) sbRect.height) * hp);
 		int w = sbRect.width;
 		
-		JPanel panels = new JPanel();
+		SidebarPanel panels = new SidebarPanel();
+		panels.setName(name);
 		panels.setLayout(null);
 		panels.setBounds(x, y, w, h);
 		panels.setBackground(color);

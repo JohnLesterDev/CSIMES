@@ -1,4 +1,4 @@
-package net.csimes.table;
+package net.csimes.temp;
 
 import java.io.*;													 // Importing the java I/O package
 import java.awt.*;										 	         // Importing the Abstract Window Toolkit package
@@ -19,19 +19,20 @@ import net.csimes.page.*;
 import net.csimes.temp.*;
 import net.csimes.util.*;
 import net.csimes.mouse.*;
+import net.csimes.table.*;
 import net.csimes.audio.*;
 import net.csimes.splash.*;
 import net.csimes.listeners.*;
 
 
-public class CHeaderRenderer extends DefaultTableCellRenderer {
+
+public class SidebarPanel extends JPanel {
 	
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            component.setBackground(new Color(144, 142, 151));
-            component.setForeground(Color.black);
-            component.setFont(new Font("Arial", Font.BOLD, 13));
-            ((DefaultTableCellRenderer) component).setHorizontalAlignment(SwingConstants.CENTER);
-            return component;
+	public boolean selection = false;
+	
+	public SidebarPanel() {}
+	
+	public boolean isSelected() {
+		return this.selection;
 	}
 }

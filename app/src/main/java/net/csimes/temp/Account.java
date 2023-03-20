@@ -121,9 +121,9 @@ public class Account implements Serializable {
 	
 	public Account() {
 		setUID();
-		this.accTypes.put(new Integer(0), "admin");
-		this.accTypes.put(new Integer(1), "owner");
-		this.accTypes.put(new Integer(2), "staff");
+		this.accTypes.put((Integer) (0), "admin");
+		this.accTypes.put((Integer) (1), "owner");
+		this.accTypes.put((Integer) (2), "staff");
 	
 	}
 }
