@@ -370,32 +370,33 @@ public class MAINPAGE {
 			);
 			cbc.requestFocusInWindow();
 			
-			if (stat == 0 && !cbc.getSelectedItem().equals("") && !desc.getText().equals("") && !quan.getText().equals("") && !prc.getText().equals("")) {
+			if (stat == 0) {
 				
-				Product prd = new SecurityControl(new Product(
-					MAINPAGE.maxID + 1,
-					(String) cbc.getSelectedItem(),
-					desc.getText(),
-					Integer.parseInt(quan.getText()),
-					Float.parseFloat(prc.getText())
-				)).encryptProduct();
-				
-				ProductIO.write(prd, Initialize.invenPath);
-				
-				JOptionPane.showMessageDialog(
-					null,
-					"Product added successfully!",
-					"CSIMES - Add Product Successful",
-					JOptionPane.INFORMATION_MESSAGE,
-					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
-				);
-				
-				table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
-				);
-				break;
-			} else {
-				JOptionPane.showMessageDialog(
+				if (!cbc.getSelectedItem().equals("") && !desc.getText().equals("") && !quan.getText().equals("") && !prc.getText().equals("") && !(desc.getText().equals("Description") && quan.getText().equals("Quantity") && prc.getText().equals("Price"))) {
+						Product prd = new SecurityControl(new Product(
+						MAINPAGE.maxID + 1,
+						(String) cbc.getSelectedItem(),
+						desc.getText(),
+						Integer.parseInt(quan.getText()),
+						Float.parseFloat(prc.getText())
+					)).encryptProduct();
+					
+					ProductIO.write(prd, Initialize.invenPath);
+					
+					JOptionPane.showMessageDialog(
+						null,
+						"Product added successfully!",
+						"CSIMES - Add Product Successful",
+						JOptionPane.INFORMATION_MESSAGE,
+						new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+					);
+					
+					table.setModel(
+						new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount"})
+					);
+					break;
+				}  else if (desc.getText().equals("Description") && quan.getText().equals("Quantity") && prc.getText().equals("Price")) {
+					JOptionPane.showMessageDialog(
 					null,
 					"Invalid input detected. Please try again.",
 					"CSIMES - Add Product Error",
@@ -404,6 +405,19 @@ public class MAINPAGE {
 				);
 				
 				continue;
+				} else {
+					JOptionPane.showMessageDialog(
+					null,
+					"Invalid input detected. Please try again.",
+					"CSIMES - Add Product Error",
+					JOptionPane.ERROR_MESSAGE,
+					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+				);
+				
+				continue;
+				}
+			} else {
+				break;
 			}
 		}
 		
@@ -727,7 +741,7 @@ public class MAINPAGE {
 		mp_one.add(spane);
 		this.components.put(this.spane.getName(), this.spane);
 		
-		mp_one.getInputMap().put(KeyStroke.getKeyStroke("shift alt A"), "addPRDAction");
+		mp_one.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("shift alt A"), "addPRDAction");
 		mp_one.getActionMap().put("addPRDAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				insertProduct();
