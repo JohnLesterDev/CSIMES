@@ -21,6 +21,7 @@ import net.csimes.util.*;
 import net.csimes.mouse.*;
 import net.csimes.table.*;
 import net.csimes.audio.*;
+import net.csimes.panels.*;
 import net.csimes.splash.*;
 import net.csimes.listeners.*;
 
@@ -35,7 +36,7 @@ public class MAINPAGE {
 	private Account acc;
 	
 	private JTable table;
-	private Sidebars mainPanel;
+	public Sidebars mainPanel;
 	public static int maxID = 0;
 	
 	public HashMap<String,Component> components = new HashMap<String,Component>();
@@ -146,7 +147,7 @@ public class MAINPAGE {
 		} else {
 			table.setRowSorter(null);
 			table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
 			);
 		}
 	}
@@ -173,7 +174,7 @@ public class MAINPAGE {
 				DefaultTableModel model = (DefaultTableModel) table.getModel();
                 model.removeRow(selectedRow);
                 table.setModel(
-				new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+				new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
 				);
 			}
         } else {
@@ -346,7 +347,7 @@ public class MAINPAGE {
 				);
 				
 				table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
 				);
 				break;
 			} else {
@@ -529,7 +530,7 @@ public class MAINPAGE {
 				);
 				
 				table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
 				);
 				return;
 			} else {
@@ -643,110 +644,15 @@ public class MAINPAGE {
 		int btnH = (int) (((float) this.rootHeight) * 0.05);
 		
 		Sidebars sidebar = this.sidebars(this.mainPanel);
-
-		Sidebars mp_one = this.createMainPane("inventorypanel");
 		
-		this.table = new JTable();
-
-		table.setModel(
-			new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
-		);
+		InventoryPanel mp_one = new InventoryPanel(this);
+		this.table = mp_one.table;
+		this.spane = mp_one.spane;
+		this.mainPanel = mp_one.panel;
+		this.mainPanels.put("inventorypanel", mp_one.panel);
 		
-
-		JTableHeader header = this.table.getTableHeader();
-        header.setDefaultRenderer(new CHeaderRenderer());
-		table.getTableHeader().setReorderingAllowed(false);
-
-		CTableRenderer renderer = new CTableRenderer();
-        renderer.setHorizontalAlignment(SwingConstants.CENTER);
-        table.setDefaultRenderer(Object.class, renderer);
-
-		this.spane = new JScrollPane(table);
-		this.spane.setName("tablespane");
-		mp_one.addMouseListener(new MouseAdapter() {
-			public void mouseEntered(MouseEvent e) {
-				mp_one.requestFocusInWindow();
-			}
-		});
-		
-		Rectangle mpR = mp_one.getBounds();
-		
-		Rectangle tR = new Rectangle(
-			(int) (((float) mpR.width) * 0.02),
-			(int) (((float) mpR.height) * 0.131),
-			(int) (((float) mpR.width) * 0.961),
-			(int) (((float) mpR.height) * 0.819)
-		);
-		
-		this.spane.setBounds(tR);
-		mp_one.add(spane);
-		this.components.put(this.spane.getName(), this.spane);
-		
-		mp_one.getInputMap().put(KeyStroke.getKeyStroke("alt A"), "addPRDAction");
-		mp_one.getActionMap().put("addPRDAction", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				insertProduct();
-			}
-		});
-		
-		table.getInputMap().put(KeyStroke.getKeyStroke("alt D"), "delPRDAction");
-		table.getActionMap().put("delPRDAction", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				deleteRowFromTable();
-			}
-		});
-		
-		table.getInputMap().put(KeyStroke.getKeyStroke("alt M"), "modPRDAction");
-		table.getActionMap().put("modPRDAction", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				modifyProduct();
-			}
-		});
-		
-		
-		
-		mp_one.getInputMap().put(KeyStroke.getKeyStroke("shift alt P"), "upthemeAction");
-		mp_one.getActionMap().put("upthemeAction", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				AudioControl.play(ResourceControl.getResourceFileStream("wav/uptheme.wav", true));
-			}
-		});
-		
-		mp_one.getInputMap().put(KeyStroke.getKeyStroke("shift alt L"), "feelAction");
-		mp_one.getActionMap().put("feelAction", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				AudioControl.play(ResourceControl.getResourceFileStream("wav/feelinggood.wav", true));
-			}
-		});
-		
-		mp_one.getInputMap().put(KeyStroke.getKeyStroke("control alt P"), "noAudioAction");
-		mp_one.getActionMap().put("noAudioAction", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				AudioControl.stop();
-			}
-		});
-		
-		
-		Rectangle sR = new Rectangle(
-			(int) (((float) mpR.width) * 0.742),
-			(int) (((float) mpR.height) * 0.056),
-			(int) (((float) mpR.width) * 0.221),
-			(int) (((float) mpR.height) * 0.05)
-		);
-		
-		Dimension sLD = new Dimension(
-			(int) (((float) mpR.width) * 0.025),
-			(int) (((float) mpR.height) * 0.040)
-		);
-		
-		JTextField searchF = this.createTextField(mp_one, "search", (int) (((float) sR.height) * 0.65), sR, null);
-		JLabel searchLogo = this.createLabel(searchF, new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/search.png").getImage(), sLD.width, sLD.height)), "searchL", sLD);
-		
-		((AbstractDocument)searchF.getDocument()).putProperty("parent", searchF);
-		((AbstractDocument)searchF.getDocument()).addDocumentListener(new SearchListener(table, this));
-		
-		this.mainPanel = mp_one;
-		mp_one.repaint();
+		TransactionPanel mp_two = new TransactionPanel(this);
+		this.mainPanels.put("transactionpanel", mp_two.panel);
 		
 		JLabel ex = this.createLabel(
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/x.png").getImage(), exW, exH)), 
@@ -774,7 +680,7 @@ public class MAINPAGE {
 	}
 
 	
-	public Sidebars sidebars(JPanel CurrentPanel) {
+	public Sidebars sidebars(Sidebars CurrentPanel) {
 		Sidebars panel = new Sidebars(0 - (int) (((float) this.rootWidth) * 0.25), 0);
 		panel.setName("sidebar");
 		panel.setBackground(new Color(144, 142, 151));
@@ -843,7 +749,7 @@ public class MAINPAGE {
 		panel.setBounds(new Rectangle(sX, sY, sW, sH));
 		this.page.getContentPane().add(panel);
 		this.components.put(panel.getName(), panel);
-		
+
 		SidebarPanel logoutPanel = this.createSideBarPane(panel, "logout", 0.77f, 0.059f, new Color(144, 142, 151), new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				String msg_ = "Are you sure you want to logout?";
@@ -1020,6 +926,7 @@ public class MAINPAGE {
 		for (Sidebars mpp : this.mainPanels.values()) {
 			if (mpp.getName().equals(panelName)) {
 				mpp.setVisible(true);
+				this.mainPanel = mpp;
 			} else {
 				mpp.setVisible(false);
 			}
@@ -1041,6 +948,38 @@ public class MAINPAGE {
 		this.page.getContentPane().add(mp);
 		this.mainPanels.put(name, mp);
 		
+		return mp;
+	}
+	
+	public Sidebars createEmptyMainPane(String name) {
+		int x = (int) (((float) this.rootWidth) * 0.117);
+		int y = (int) (((float) this.rootHeight) * 0.111);
+		int w = (int) (((float) this.rootWidth) * 0.766);
+		int h = (int) (((float) this.rootHeight) * 0.808);
+		
+		Sidebars mp = new Sidebars(x, (int) (((float) this.rootWidth) * 0.223));
+		mp.setLayout(null);
+		mp.setName(name);
+		
+		mp.setBounds(x, y, w, h);
+		System.out.printf("W:%d H:%d\n", w, h);
+
+		return mp;
+	}
+	
+	public Sidebars createEmptyMainPane(String name, boolean isShow) {
+		int x = (int) (((float) this.rootWidth) * 0.117);
+		int y = (int) (((float) this.rootHeight) * 0.111);
+		int w = (int) (((float) this.rootWidth) * 0.766);
+		int h = (int) (((float) this.rootHeight) * 0.808);
+		
+		Sidebars mp = new Sidebars(x, (int) (((float) this.rootWidth) * 0.223));
+		mp.setLayout(null);
+		mp.setName(name);
+		
+		mp.setBounds((int) (((float) this.rootWidth) * 0.223), y, w, h);
+		System.out.printf("W:%d H:%d\n", w, h);
+
 		return mp;
 	}
 	
@@ -1144,7 +1083,7 @@ public class MAINPAGE {
 		JLabel label = new JLabel();
 		label.setName(name);
 		label.setIcon(icon);
-		label.addMouseListener(new MainMouse(page, this.mainPanel, label, this.spane, iconType, this.components));
+		label.addMouseListener(new MainMouse(this, page, this.mainPanel, label, this.spane, iconType, this.components));
 		
 		this.page.getContentPane().add(label);
 		label.setBounds(rect);
@@ -1171,7 +1110,7 @@ public class MAINPAGE {
 		JLabel label = new JLabel();
 		label.setName(name);
 		label.setIcon(icon);
-		label.addMouseListener(new MainMouse(page, this.mainPanel, label, this.spane, iconType, this.components));
+		label.addMouseListener(new MainMouse(this, page, this.mainPanel, label, this.spane, iconType, this.components));
 		
 		panel.add(label);
 		label.setBounds(rect);

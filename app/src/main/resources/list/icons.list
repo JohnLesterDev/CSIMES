@@ -1,6 +1,7 @@
 icons/acc_checked.png
 icons/acc_normal.png
 icons/acc_wrong.png
+icons/add_order.png
 icons/csimes_full.png
 icons/csimes_full_bg.png
 icons/csimes_full_cropped.png
@@ -9,6 +10,7 @@ icons/csimes_logo_bg.png
 icons/csimes_logo_bg_cropped.png
 icons/csimes_logo_selected.png
 icons/csimes_mainsplash.png
+icons/edit_order.png
 icons/folder.png
 icons/hamburger.png
 icons/home.png
@@ -21,6 +23,8 @@ icons/pass_checked.png
 icons/pass_normal.png
 icons/pass_wrong.png
 icons/pie.png
+icons/preview_order.png
+icons/save_order.png
 icons/search.png
 icons/sell.png
 icons/splash_1.png
@@ -30,6 +34,7 @@ icons/splash_4.png
 icons/stock.png
 icons/translog.png
 icons/user.png
+icons/void_order.png
 icons/x.png
 icons/x_clicked.png
 icons/x_selected.png

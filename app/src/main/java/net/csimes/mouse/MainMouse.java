@@ -36,14 +36,16 @@ public class MainMouse extends MouseAdapter {
 	public int rootHeight = (int) (((float) dimension.height) * 0.8);
 	
 	public Sidebars mainPanel;
+	public MAINPAGE mpp;
 	
-	public MainMouse(Page page, Sidebars mainPanel, JLabel label, JScrollPane table, String iconType, HashMap<String,Component> components) {
+	public MainMouse(MAINPAGE mpp, Page page, Sidebars mainPanel, JLabel label, JScrollPane table, String iconType, HashMap<String,Component> components) {
 		this.label = label;
 		this.page = page;
 		this.table = table;
 		this.components = components;
 		this.iconType = iconType;
 		this.mainPanel = mainPanel;
+		this.mpp = mpp;
 	}
 	
 	@Override
@@ -66,10 +68,10 @@ public class MainMouse extends MouseAdapter {
 			
 			if (panel.isShown && mainPanel.isShown) {
 				panel.runs();
-				mainPanel.runs();
+				this.mpp.mainPanel.runs();
 			} else {
 				panel.runs();
-				mainPanel.runs();
+				this.mpp.mainPanel.runs();
 			}
 		}
 	}

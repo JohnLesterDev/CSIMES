@@ -12,6 +12,15 @@ plugins {
 	id 'java'
 }
 
+task wtf(type: Javadoc) {
+	source = sourceSets.main.allJava
+	destinationDir = file('$buildDir/wtf/javadoc')
+	title = "CSIMES - Construction Supply Inventory Management Executable System Documentation"
+
+	options.encoding('UTF-8')
+	options.addStringOption('-private')
+}
+
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
