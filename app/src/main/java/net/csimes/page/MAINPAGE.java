@@ -34,6 +34,7 @@ public class MAINPAGE {
 	
 	private Point mOffset;
 	private Account acc;
+	public JLabel ham_;
 	
 	private JTable table;
 	public Sidebars mainPanel;
@@ -661,13 +662,13 @@ public class MAINPAGE {
 		JLabel logo_ = this.createLabel(
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/csimes_full.png").getImage(), logW, logH)), 
 			"title", new Rectangle(logX, logY, logW, logH), "csimes_full");
-		JLabel ham_ = this.createLabel(
+		this.ham_ = this.createLabel(
 			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/hamburger.png").getImage(), hamW, hamH)), 
 			"hamburger", new Rectangle(hamX, hamY, hamW, hamH), "hamburger"
 			);
 		
-		ham_.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("alt S"), "hamburgershowAction");
-		ham_.getActionMap().put("hamburgershowAction", new AbstractAction() {
+		this.ham_.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("alt S"), "hamburgershowAction");
+		this.ham_.getActionMap().put("hamburgershowAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				ham_.dispatchEvent(new MouseEvent(ham_, MouseEvent.MOUSE_PRESSED,
 				System.currentTimeMillis(), 0, 0, 0, 1, false, MouseEvent.BUTTON1));
@@ -927,6 +928,8 @@ public class MAINPAGE {
 			if (mpp.getName().equals(panelName)) {
 				mpp.setVisible(true);
 				this.mainPanel = mpp;
+			this.ham_.dispatchEvent(new MouseEvent(ham_, MouseEvent.MOUSE_PRESSED,
+					System.currentTimeMillis(), 0, 0, 0, 1, false, MouseEvent.BUTTON1));
 			} else {
 				mpp.setVisible(false);
 			}
@@ -1071,7 +1074,28 @@ public class MAINPAGE {
 			label.setFont(new Font("Arial", Font.BOLD, fontSize));
 			label.setForeground(Color.black);
 		}
+		label.setName(name);
+		panel.add(label);
+		this.components.put(label.getName(), label);
 		
+		return label;
+	}
+	
+	public JLabel createLabel(boolean isText, JLabel panel, String name, int fontSize, Rectangle labelRect) {
+		JLabel label = new JLabel(name);
+		
+		label.setBounds(labelRect);
+		
+		if (isText == true) {
+			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.white);
+		} else {
+			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.black);
+		}
+		label.setName(name);
 		panel.add(label);
 		this.components.put(label.getName(), label);
 		
@@ -1129,6 +1153,21 @@ public class MAINPAGE {
 		label.setBackground(new Color(rgb[0], rgb[1], rgb[2]));
 		
 		this.page.getContentPane().add(label);
+		this.components.put(label.getName(), label);
+		
+		return label;
+	}
+
+	public JLabel createLabel(Sidebars sb, String name, Rectangle rect, int... rgb) {
+		JLabel label = new JLabel();
+		
+		label.setBounds(rect);
+		label.setOpaque(true);
+		
+		label.setBackground(new Color(rgb[0], rgb[1], rgb[2]));
+		label.setName(name);
+		
+		sb.add(label);
 		this.components.put(label.getName(), label);
 		
 		return label;

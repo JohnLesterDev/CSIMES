@@ -22,7 +22,7 @@ import net.csimes.listeners.*;
 public class Inventory {
 	
 	private static File inventoryFile = new File(Initialize.rootDir + File.separator + "INVENTORY");
-	private static String inventoryPath = Initialize.rootDir + File.separator + "INVENTORY";
+	public static String inventoryPath = Initialize.rootDir + File.separator + "INVENTORY";
 	
 	private static HashMap<Integer,Product> prodsByID = Inventory.setProdsToID();
 	private static Object[][] prodsByTable = Inventory.setProductToTable();

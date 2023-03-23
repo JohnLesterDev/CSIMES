@@ -3,6 +3,7 @@ package net.csimes.panels;
 import java.io.*;													 
 import java.awt.*;										 	         
 import java.util.*;													 
+import java.time.*;													 
 import javax.swing.*;												 
 import java.awt.image.*;
 import java.awt.event.*;											 
@@ -48,6 +49,8 @@ public class TransactionPanel {
 	
 	/** The JScrollPane that will be used for the table field.*/
 	public JScrollPane spane;
+	
+	public Thread thread;
 	
 	
 	/**
@@ -113,7 +116,96 @@ public class TransactionPanel {
 		this.panel.add(this.spane);
 		this.mainp.components.put(this.spane.getName(), this.spane);
 		
-		this.panel.repaint();
+		
+		Rectangle dflR = new Rectangle(
+			(int) (((float) mpr.width) * 0.032),
+			(int) (((float) mpr.height) * 0.052),
+			(int) (((float) mpr.width) * 0.084),
+			(int) (((float) mpr.height) * 0.042)
+		);
+		JLabel dateforLabel = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"Date:",
+			(int) (((float) dflR.height) * 0.8),
+			dflR
+		);
+		
+		Rectangle iflR = new Rectangle(
+			(int) (((float) mpr.width) * 0.032),
+			(int) (((float) mpr.height) * 0.103),
+			(int) (((float) mpr.width) * 0.084),
+			(int) (((float) mpr.height) * 0.042)
+		);
+		JLabel idforLabel = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"Order ID:",
+			(int) (((float) iflR.height) * 0.8),
+			iflR
+		);
+		
+		Rectangle dlR = new Rectangle(
+			(int) (((float) mpr.width) * 0.122),
+			(int) (((float) mpr.height) * 0.052),
+			(int) (((float) mpr.width) * 0.166),
+			(int) (((float) mpr.height) * 0.042)
+		);
+		JLabel dateLabel = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"",
+			(int) (((float) dflR.height) * 0.68),
+			dlR
+		);
+		
+		Rectangle iR = new Rectangle(
+			(int) (((float) mpr.width) * 0.122),
+			(int) (((float) mpr.height) * 0.105),
+			(int) (((float) mpr.width) * 0.134),
+			(int) (((float) mpr.height) * 0.042)
+		);
+		JLabel idLabel = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"",
+			(int) (((float) iR.height) * 0.68),
+			iR
+		);
+		
+		Rectangle inBgR = new Rectangle(
+			(int) (((float) mpr.width) * 0.028),
+			(int) (((float) mpr.height) * 0.230),
+			(int) (((float) mpr.width) * 0.281),
+			(int) (((float) mpr.height) * 0.192)
+		);
+		JLabel inBg = this.mainp.createLabel(this.panel, "inputbg", inBgR,  144, 142, 151);
+
+		Runnable timeRunnable = new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					LocalDateTime currentDateTime = LocalDateTime.now();
+					String dateTimeString = String.format("%02d/%02d/%04d-%02d:%02d:%02d",
+							currentDateTime.getMonthValue(),
+							currentDateTime.getDayOfMonth(),
+							currentDateTime.getYear(),
+							currentDateTime.getHour(),
+							currentDateTime.getMinute(),
+							currentDateTime.getSecond());
+					dateLabel.setText(dateTimeString);
+					try {
+						Thread.sleep(1000); // sleep for 1 second
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		this.thread = new Thread(timeRunnable);
+		thread.setDaemon(true);
+		thread.start();
+		this.panel.setVisible(false);
 	}
 	
 	/**

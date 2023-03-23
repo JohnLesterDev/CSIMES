@@ -73,6 +73,7 @@ public class InventoryPanel {
 	/**
 	* Sets the components (JComponent) needed for the panel such as JTable and JLabels
 	* that will be used to display crucial information about the inventory.
+	* 
 	*/
 	public void setComponents() {
 		this.table = new JTable();
