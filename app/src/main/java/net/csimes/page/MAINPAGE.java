@@ -1163,6 +1163,7 @@ public class MAINPAGE {
 		
 		label.setBounds(rect);
 		label.setOpaque(true);
+		System.out.println("W: " + rect.width + "H: " + rect.height);
 		
 		label.setBackground(new Color(rgb[0], rgb[1], rgb[2]));
 		label.setName(name);
@@ -1228,6 +1229,95 @@ public class MAINPAGE {
 		this.components.put(textField.getName(), textField);
 		
 		return textField;
+	}
+	
+	public JTextField createPanelTextField(JLabel sb, String name, Rectangle rect, String initial) {
+		JTextField tf = new JTextField();
+		tf.setText(initial);
+		tf.setForeground(Color.gray);
+		
+		tf.setBounds(rect);
+		sb.add(tf);
+		
+		tf.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+					e.consume();
+				}
+			}
+		});
+		tf.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (tf.getText().trim().equals(initial)) {
+						tf.setText("");
+					}
+					
+					tf.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (tf.getText().trim().equals("")) {
+						tf.setText(initial);
+					}
+					
+					tf.setForeground(Color.gray);
+				}
+			});
+		tf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JTextField) e.getSource()).transferFocus();
+			}
+		});
+		
+		return tf;
+	}
+	
+	public JTextField createPanelTextField(TransactionPanel tpl, JLabel sb, String name, Rectangle rect, String initial, Runnable runners) {
+		JTextField tf = new JTextField();
+		tf.setText(initial);
+		tf.setForeground(Color.gray);
+		
+		tf.setBounds(rect);
+		sb.add(tf);
+		((AbstractDocument)tf.getDocument()).putProperty("parent", tf);
+		((AbstractDocument)tf.getDocument()).addDocumentListener(new PRDIDListener(tpl));
+		tf.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+					e.consume();
+				}
+			}
+		});
+		tf.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (tf.getText().trim().equals(initial)) {
+						tf.setText("");
+					}
+					
+					tf.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (tf.getText().trim().equals("")) {
+						tf.setText(initial);
+					}
+					
+					tf.setForeground(Color.gray);
+				}
+			});
+		tf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JTextField) e.getSource()).transferFocus();
+			}
+		});
+		
+		return tf;
 	}
 
 }
