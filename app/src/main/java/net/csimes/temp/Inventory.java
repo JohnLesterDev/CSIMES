@@ -158,7 +158,6 @@ public class Inventory {
 	}
 	
 	public static HashMap<Integer,Product> getProdsByID() {
-		Inventory.prodsByID = Inventory.setProdsToID();
 		
 		return Inventory.prodsByID;
 	}

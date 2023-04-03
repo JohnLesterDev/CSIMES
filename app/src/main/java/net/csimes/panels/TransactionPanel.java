@@ -47,6 +47,8 @@ public class TransactionPanel {
 	/** The JTable that will be used for displaying information about the product*/
 	public JTable table;
 	
+	public String dateTimeString = "";
+	
 	/** The JScrollPane that will be used for the table field.*/
 	public JScrollPane spane;
 	
@@ -96,20 +98,218 @@ public class TransactionPanel {
 	}
 	
 	public void addProductToTransaction(int id, int quantity) {
-		if (Inventory.getProdsByID().containsKey(id) && quantity > 0) {
+		if (Inventory.getProdsByID().containsKey(id) && Math.abs(quantity) > 0) {
 			Product prd = Inventory.getProdsByID().get(id);
+			
+			int rowCount = table.getRowCount();
+			
+			if (rowCount > 0) {
+				for (int i = 0; i < rowCount;  i++) {
+					int lastProdID = Integer.valueOf(String.valueOf(table.getValueAt(i, 0)));
+					if (id == lastProdID) {
+						int lastQuantity = (int) table.getValueAt(i, 2);
+						quantity  += lastQuantity;
+						
+						if (quantity < 0) {
+							JOptionPane.showMessageDialog(
+								null,
+								"Quantity cannot be zero or negative. Please enter a valid quantity.",
+								"CSIMES - Invalid Quantity",
+								JOptionPane.INFORMATION_MESSAGE,
+								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+							);
+							
+							return;
+						}
+						
+						DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+						tableModel.removeRow(i);
+						tableModel.insertRow(i, new Object[]{
+							String.format("%06d", prd.productID),
+							prd.name,
+							quantity,
+							String.format("%.2f", prd.price),
+							String.format("%.2f",  ((float) quantity) * prd.price)
+						});
+						table.setModel(tableModel);
+						return;
+					}
+				}
+				
+				if (quantity < 0) {
+					JOptionPane.showMessageDialog(
+								null,
+								"Quantity cannot be zero or negative. Please enter a valid quantity.",
+								"CSIMES - Invalid Quantity",
+								JOptionPane.INFORMATION_MESSAGE,
+								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+							);
 
-			DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
-			tableModel.addRow(new Object[]{
-				String.format("%06d", prd.productID),
-				prd.name,
-				quantity,
-				String.format("%.2f", prd.price),
-				String.format("%.2f",  ((float) quantity) * prd.price)
-			});
-			table.setModel(tableModel);
+					return;
+				}
+				
+				DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+						tableModel.addRow(new Object[]{
+							String.format("%06d", prd.productID),
+							prd.name,
+							quantity,
+							String.format("%.2f", prd.price),
+							String.format("%.2f",  ((float) quantity) * prd.price)
+						});
+						table.setModel(tableModel);
+			} else {
+				if (quantity < 0) {
+					JOptionPane.showMessageDialog(
+								null,
+								"Quantity cannot be zero or negative. Please enter a valid quantity.",
+								"CSIMES - Invalid Quantity",
+								JOptionPane.INFORMATION_MESSAGE,
+								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+							);
+
+					return;
+				}
+				
+				DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+				tableModel.addRow(new Object[]{
+					String.format("%06d", prd.productID),
+					prd.name,
+					quantity,
+					String.format("%.2f", prd.price),
+					String.format("%.2f",  ((float) quantity) * prd.price)
+				});
+				table.setModel(tableModel);
+			}	
 		}
 	}
+	
+	public void processTransaction() {
+		DefaultTableModel model = (DefaultTableModel) table.getModel();
+		int rowCount = model.getRowCount();
+		
+		if (rowCount <= 0) {
+			// no product error
+			
+			return;
+		}
+		JLabel loadingLabel = new JLabel(
+			"Processing...",
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/loadingGIF.gif")).getImage(), 35, 35)),
+			JLabel.LEFT
+		);
+
+		for (int i = 0; i < rowCount; i++) {
+			int productId = Integer.valueOf(String.valueOf(table.getValueAt(i, 0)));
+			int quantity = (int) model.getValueAt(i, 2);
+			if (!decrementProductQuantity(productId, quantity)) {
+				Window[] windows = Window.getWindows();
+				for (Window window : windows) {
+				   if (window instanceof JDialog) {
+					  JDialog dialog = (JDialog) window;
+					  Container contentPane = dialog.getContentPane();
+					  if (contentPane.getComponentCount() > 0 && contentPane.getComponent(0) instanceof JOptionPane) {
+						 dialog.dispose();
+					  }
+				   }
+				}
+				JOptionPane.showMessageDialog(
+								null,
+								"Quantity result cannot be zero or negative. Please enter a valid quantity. (" + i + ")",
+								"CSIMES - Invalid Quantity",
+								JOptionPane.INFORMATION_MESSAGE,
+								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+							);
+				return;
+			}
+		}
+
+		Window[] windows = Window.getWindows();
+		for (Window window : windows) {
+				   if (window instanceof JDialog) {
+					  JDialog dialog = (JDialog) window;
+					  Container contentPane = dialog.getContentPane();
+					  if (contentPane.getComponentCount() > 0 && contentPane.getComponent(0) instanceof JOptionPane) {
+						 dialog.dispose();
+					  }
+				   }
+				}
+		
+			JOptionPane.showOptionDialog(
+			null, 
+			"Transaction Completed!", "CSIMES - Transaction Status", 
+			JOptionPane.DEFAULT_OPTION, 
+			JOptionPane.PLAIN_MESSAGE,
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
+			new String[]{"OK"},
+			"OK"
+		);
+		
+		model.setRowCount(0); // Clear the table for a new transaction
+	}
+	
+	public void voidTransaction() {
+		DefaultTableModel model = (DefaultTableModel) table.getModel();
+		int rowCount = model.getRowCount();
+		model.setRowCount(0);
+		JOptionPane.showOptionDialog(
+			null, 
+			"The transaction has been successfully voided!", "CSIMES - Void Transaction Status", 
+			JOptionPane.DEFAULT_OPTION, 
+			JOptionPane.PLAIN_MESSAGE,
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
+			new String[]{"OK"},
+			"OK"
+		);
+	}
+	
+	public void deleteProductFromTransaction() {
+		int rowIndex = table.getSelectedRow();
+		String msg_ = "Do you wish to delete this Product from Transaction? (ROW: " + rowIndex + ")";
+			int confirmation = JOptionPane.showOptionDialog(null,
+								msg_, 
+								"CSIMES - Delete Product from Transaction", 
+								JOptionPane.YES_NO_OPTION, 
+								JOptionPane.QUESTION_MESSAGE,
+								new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
+								new String[]{"Yes", "Cancel"},
+								"Yes"
+					);
+            if (confirmation != JOptionPane.YES_OPTION) {
+				return;
+			}
+		// If a row is selected
+		if (rowIndex != -1) {
+			// Remove the selected row from the table model
+			DefaultTableModel model = (DefaultTableModel) table.getModel();
+			model.removeRow(rowIndex);
+		}
+	}
+	
+	public boolean decrementProductQuantity(int id, int quantity) {
+		Product prd = Inventory.getProductByID(id);
+		
+		if ((prd.quantity -= quantity) <= 0) {
+			return false;
+		}
+		System.out.println(prd.quantity);
+		System.out.println(prd.totals());
+		
+		prd.filePath.delete();
+		
+		ProductIO.write(new SecurityControl(new Product(
+			prd.productID,
+			prd.category,
+			prd.name,
+			prd.quantity,
+			prd.price
+		)).encryptProduct(), Inventory.inventoryPath);
+		
+		Inventory.refresh();
+		
+		return true;
+	}
+	
+	
 	
 	/**
 	* Sets the Sidebars panel with the necessary positions and adding it to the 
@@ -288,7 +488,9 @@ public class TransactionPanel {
 				addProductToTransaction(Integer.valueOf(inProdIDLabelF.getText()), Integer.valueOf(inQuanIDLabelF.getText()));
 				inQuanIDLabelF.setText("");
 				inProdIDLabelF.setText("");
-				maintf.requestFocusInWindow();
+				 SwingUtilities.invokeLater(() -> {
+					maintf.requestFocusInWindow();
+				});
 			}
 		});
 
@@ -346,7 +548,7 @@ public class TransactionPanel {
 			false, 
 			detBg,
 			"Description:",
-			(int) (((float) detdescLR.height) * 0.69),
+			(int) (((float) detdescLR.height) * 0.64),
 			detdescLR
 		);
 		
@@ -445,7 +647,7 @@ public class TransactionPanel {
 			public void run() {
 				while (true) {
 					LocalDateTime currentDateTime = LocalDateTime.now();
-					String dateTimeString = String.format("%02d/%02d/%04d-%02d:%02d:%02d",
+					dateTimeString = String.format("%02d/%02d/%04d-%02d:%02d:%02d",
 							currentDateTime.getMonthValue(),
 							currentDateTime.getDayOfMonth(),
 							currentDateTime.getYear(),
@@ -477,6 +679,28 @@ public class TransactionPanel {
 				maintf.requestFocusInWindow();
 			}
 		});
+		
+		this.panel.getInputMap().put(KeyStroke.getKeyStroke("alt P"), "prostransAction");
+		this.panel.getActionMap().put("prostransAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				processTransaction();
+			}
+		});
+		
+		this.panel.getInputMap().put(KeyStroke.getKeyStroke("alt V"), "voidtransAction");
+		this.panel.getActionMap().put("voidtransAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				voidTransaction();
+			}
+		});
+		
+		this.panel.getInputMap().put(KeyStroke.getKeyStroke("alt D"), "delprdAction");
+		this.panel.getActionMap().put("delprdAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				deleteProductFromTransaction();
+			}
+		});
+		
 		MAINPAGE tmpmp = this.mainp;
 	}
 }
