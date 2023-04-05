@@ -10,7 +10,7 @@ git add .
 git commit -m "%~1"
 
 echo Pushing to remote main...
-git push origin main
+git push -f origin main
 
 echo All processes done!
 pause
