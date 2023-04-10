@@ -14,6 +14,7 @@ import net.csimes.util.*;
 import net.csimes.mouse.*;
 import net.csimes.table.*;
 import net.csimes.audio.*;
+import net.csimes.client.*;
 import net.csimes.splash.*;
 import net.csimes.listeners.*;
 
@@ -97,12 +98,15 @@ public class Inventory {
 	
 	private static ArrayList<String> setAllProdCategories() {
 		ArrayList<String> allProdCategories_ = new ArrayList<String>();
+		allProdCategories_.add("Categories");
 		
 		if (Inventory.inventoryFile.listFiles() != null) {
 			for (File file : Inventory.inventoryFile.listFiles()) {
 				Product prd = ProductIO.read(file.getAbsolutePath());
 				
-				allProdCategories_.add(prd.category);
+				if (!allProdCategories_.contains(prd.category)) {
+					allProdCategories_.add(prd.category);
+				}
 			}
 			
 			Inventory.allProdCategories = allProdCategories_;
@@ -127,6 +131,7 @@ public class Inventory {
 				prdArray.add(prd.category);
 				prdArray.add(prd.name);
 				prdArray.add(prd.quantity);
+				prdArray.add(prd.unit);
 				prdArray.add(String.format("%.2f", prd.price));				
 				prdArray.add(String.format("%.2f", prd.totals()));	
 				prdArray.add(prd.dateTime);
@@ -175,7 +180,26 @@ public class Inventory {
 	}
 	
 	public static Product getProductByID(Integer ID) {
-		return Inventory.prodsByID.get(ID);
+		String payload = "GRP7>FETCHES|||BYID|||" + Integer.toString(ID);
+		Product prd = null;
+		
+		try {
+			CLIENT.now.output.writeUTF(payload);
+			
+			String base64String = CLIENT.now.input.readUTF();
+			byte[] objectBytes = Base64.getDecoder().decode(base64String);
+			
+			// Deserialize the object
+			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			prd = (Product) ois.readObject();
+			ois.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return prd;
 	}
 	
 	public static void insertProduct(Object... obj) {
@@ -185,8 +209,9 @@ public class Inventory {
 			Inventory.getMaxID() + 1,
 			(String) obj[0],
 			(String) obj[1],
-			(Integer) obj[2],
-			(Float) obj[3]
+			(String) obj[2],
+			(Float) obj[3],
+			(Float) obj[4]
 		)).encryptProduct();
 		
 		ProductIO.write(prd, Inventory.inventoryPath);

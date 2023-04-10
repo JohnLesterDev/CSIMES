@@ -84,7 +84,7 @@ public class LoginPage {
 		label.setName(name);
 		
 		label.setBounds(labelRect);
-		label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get(iconName).getImage(), labelRect.width, labelRect.height)));
+		label.setIcon(new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile(iconName)).getImage(), labelRect.width, labelRect.height)));
 		this.page.getContentPane().add(label);
 		this.components.put(label.getName(), label);
 		

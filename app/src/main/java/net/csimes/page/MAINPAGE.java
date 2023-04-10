@@ -85,9 +85,7 @@ public class MAINPAGE {
 		}
 		
 		MAINPAGE.prds = Inventory.getProdsByID();
-		
-		Inventory.refresh();
-		
+
 		if (obj != null) {
 			return obj;
 		} else {
@@ -144,11 +142,11 @@ public class MAINPAGE {
 			DefaultTableModel model = (DefaultTableModel) this.table.getModel();
 			TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>(model);
 			table.setRowSorter(sorter);
-			sorter.setRowFilter(RowFilter.regexFilter("(?i).*" + input + ".*", 0, 1, 2));
+			sorter.setRowFilter(RowFilter.regexFilter("(?i).*" + input + ".*", 0, 1, 2, 4));
 		} else {
 			table.setRowSorter(null);
 			table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Unit", "Unit Price", "Total Amount", "Date"})
 			);
 		}
 	}
@@ -175,7 +173,7 @@ public class MAINPAGE {
 				DefaultTableModel model = (DefaultTableModel) table.getModel();
                 model.removeRow(selectedRow);
                 table.setModel(
-				new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+				new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Unit", "Unit Price", "Total Amount", "Date"})
 				);
 			}
         } else {
@@ -192,12 +190,54 @@ public class MAINPAGE {
 	public void insertProduct() {
 		JPanel addP = new JPanel();
 		addP.setVisible(true);
-		addP.setLayout(new GridLayout(4, 1));
+		addP.setLayout(new GridLayout(6, 1));
 		
 		JComboBox<String> cbc = new JComboBox<String>(MAINPAGE.getCategories());
 		cbc.setEditable(true);
 		cbc.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				((JComboBox) e.getSource()).transferFocus();
+			}
+		});
+		
+		JComboBox<String> cbcU = new JComboBox<String>(new String[]{"Units"});
+		cbcU.setEditable(false);
+		cbcU.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				((JComboBox) e.getSource()).transferFocus();
+			}
+		});
+		
+		JComboBox<String> msms = new JComboBox<String>(new String[]{"Measurements", "Length", "Area", "Mass", "Volume", "Others"});
+		msms.setEditable(false);
+		msms.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				switch ((String) msms.getSelectedItem()) {
+					case "Length":
+						cbcU.setModel(new DefaultComboBoxModel(new String[]{"Units", "cm", "ft", "m", "yrd", "inch"}));
+						break;
+						
+					case "Area":
+						cbcU.setModel(new DefaultComboBoxModel(new String[]{"Units", "cm2", "ft2", "m2", "yrd2", "inch2"}));
+						break;
+					
+					case "Mass":
+						cbcU.setModel(new DefaultComboBoxModel(new String[]{"Units", "g", "kg", "lb", "ton", "mg"}));
+						break;
+					
+					case "Volume":
+						cbcU.setModel(new DefaultComboBoxModel(new String[]{"Units", "L", "mL", "gal", "cm3", "ft3", "m3", "yrd3", "inch3"}));
+						break;
+					
+					case "Others":
+						cbcU.setModel(new DefaultComboBoxModel(new String[]{"Units", "pc", "pair", "set", "sack"}));
+						break;
+					
+					default:
+						cbcU.setModel(new DefaultComboBoxModel(new String[]{"Units"}));
+						break;
+				}
+				
 				((JComboBox) e.getSource()).transferFocus();
 			}
 		});
@@ -243,7 +283,11 @@ public class MAINPAGE {
 		quan.addKeyListener(new KeyAdapter() {
 			public void keyTyped(KeyEvent e) {
 				char c = e.getKeyChar();
-				if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+				if (!(Character.isDigit(c) || c == '.' || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+					e.consume();
+				}
+				String text = prc.getText();
+				if (text.contains(".") && c == '.') {
 					e.consume();
 				}
 			}
@@ -311,6 +355,8 @@ public class MAINPAGE {
 		});
 		
 		addP.add(cbc);
+		addP.add(msms);
+		addP.add(cbcU);
 		addP.add(desc);
 		addP.add(quan);
 		addP.add(prc);
@@ -328,12 +374,24 @@ public class MAINPAGE {
 			);
 			cbc.requestFocusInWindow();
 			
-			if (stat == 0 && !cbc.getSelectedItem().equals("") && !desc.getText().equals("") && !quan.getText().equals("") && !prc.getText().equals("")) {
+			if (stat != 0) {
+				break;
+			}
+			
+			if (stat == 0 && 
+				(!cbc.getSelectedItem().equals("") || !cbc.getSelectedItem().equals("Categories")) && 
+				(!cbcU.getSelectedItem().equals("") || !cbcU.getSelectedItem().equals("Measurements")) && 
+				(!msms.getSelectedItem().equals("") || !msms.getSelectedItem().equals("Units")) && 
+				(!desc.getText().equals("") || !desc.getText().equals("Description")) && 
+				(!quan.getText().equals("") || !quan.getText().equals("Quantity")) && 
+				(!prc.getText().equals("") || !prc.getText().equals("Price"))
+				) {
 				
 				Inventory.insertProduct(
 					cbc.getSelectedItem(),
 					desc.getText(),
-					Integer.parseInt(quan.getText()),
+					cbcU.getSelectedItem(),
+					Float.parseFloat(quan.getText()),
 					Float.parseFloat(prc.getText())
 				);
 				
@@ -348,7 +406,7 @@ public class MAINPAGE {
 				);
 				
 				table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Unit", "Unit Price", "Total Amount", "Date"})
 				);
 				break;
 			} else {
@@ -502,12 +560,12 @@ public class MAINPAGE {
 			int stat = JOptionPane.showOptionDialog(
 				null,
 				addP,
-				"CSIMES - Modify Product",
+				"CSIMES - Update Product",
 				JOptionPane.DEFAULT_OPTION,
 				JOptionPane.INFORMATION_MESSAGE,
 				new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 20, 20)),
-				new String[]{"Modify"},
-				"Modify"
+				new String[]{"Update"},
+				"Update"
 			);
 			cbc.requestFocusInWindow();
 			
@@ -524,21 +582,21 @@ public class MAINPAGE {
 				
 				JOptionPane.showMessageDialog(
 					null,
-					"Product has been modified successfully!",
-					"CSIMES - Modify Product Successful",
+					"Product has been updated successfully!",
+					"CSIMES - Update Product Successful",
 					JOptionPane.INFORMATION_MESSAGE,
 					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
 				);
 				
 				table.setModel(
-					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Unit", "Unit Price", "Total Amount", "Date"})
 				);
 				return;
 			} else {
 				JOptionPane.showMessageDialog(
 					null,
 					"Invalid input detected. Please try again.",
-					"CSIMES - Modify Error",
+					"CSIMES - Update Product Error",
 					JOptionPane.ERROR_MESSAGE,
 					new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
 				);				
@@ -656,14 +714,14 @@ public class MAINPAGE {
 		this.mainPanels.put("transactionpanel", mp_two.panel);
 		
 		JLabel ex = this.createLabel(
-			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/x.png").getImage(), exW, exH)), 
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/x.png")).getImage(), exW, exH)), 
 			"exits", new Rectangle(exX, exY, exW, exH), "x");
 		
 		JLabel logo_ = this.createLabel(
-			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/csimes_full.png").getImage(), logW, logH)), 
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full.png")).getImage(), logW, logH)), 
 			"title", new Rectangle(logX, logY, logW, logH), "csimes_full");
 		this.ham_ = this.createLabel(
-			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/hamburger.png").getImage(), hamW, hamH)), 
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/hamburger.png")).getImage(), hamW, hamH)), 
 			"hamburger", new Rectangle(hamX, hamY, hamW, hamH), "hamburger"
 			);
 		
@@ -731,7 +789,7 @@ public class MAINPAGE {
 		
 		JLabel usrlogo_ = this.createLabel(
 			panel,
-			new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/user.png").getImage(), usW, usH)), 
+			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/user.png")).getImage(), usW, usH)), 
 			"userlogo", new Rectangle(usX, usY, usW, usH), "user");
 		
 		String accN = "";
