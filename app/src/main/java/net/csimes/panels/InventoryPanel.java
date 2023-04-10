@@ -79,7 +79,7 @@ public class InventoryPanel {
 		this.table = new JTable();
 
 		this.table.setModel(
-			new CTableModel(this.mainp.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Price", "Total Amount", "Insertion Date"})
+			new CTableModel(this.mainp.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Unit", "Unit Price", "Total Amount", "Date"})
 		);
 		
 
@@ -125,7 +125,7 @@ public class InventoryPanel {
 		);
 		
 		JTextField searchF = this.mainp.createTextField(this.panel, "search", (int) (((float) sR.height) * 0.65), sR, null);
-		JLabel searchLogo = this.mainp.createLabel(searchF, new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/search.png").getImage(), sLD.width, sLD.height)), "searchL", sLD);
+		JLabel searchLogo = this.mainp.createLabel(searchF, new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/search.png")).getImage(), sLD.width, sLD.height)), "searchL", sLD);
 		
 		((AbstractDocument)searchF.getDocument()).putProperty("parent", searchF);
 		((AbstractDocument)searchF.getDocument()).addDocumentListener(new SearchListener(this.table, this.mainp));

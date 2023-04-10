@@ -56,7 +56,7 @@ public class MainMouse extends MouseAdapter {
 			int h = img.getIconHeight();
 			label.setIcon(new ImageIcon(
 				ImageControl.resizeImage(
-					Initialize.icons.get("icons/" + this.iconType + "_selected.png").getImage(),
+					new ImageIcon(ResourceControl.getResourceFile("icons/" + this.iconType + "_selected.png")).getImage(),
 				w, h
 			)));
 			
@@ -84,7 +84,7 @@ public class MainMouse extends MouseAdapter {
 			int h = img.getIconHeight();
 			label.setIcon(new ImageIcon(
 				ImageControl.resizeImage(
-					Initialize.icons.get("icons/" + this.iconType + "_clicked.png").getImage(),
+					new ImageIcon(ResourceControl.getResourceFile("icons/" + this.iconType + "_clicked.png")).getImage(),
 				w, h
 			)));
 		}
@@ -98,7 +98,7 @@ public class MainMouse extends MouseAdapter {
 			int h = img.getIconHeight();
 			label.setIcon(new ImageIcon(
 				ImageControl.resizeImage(
-					Initialize.icons.get("icons/" + this.iconType + ".png").getImage(),
+					new ImageIcon(ResourceControl.getResourceFile("icons/" + this.iconType + ".png")).getImage(),
 				w, h
 			)));
 		}

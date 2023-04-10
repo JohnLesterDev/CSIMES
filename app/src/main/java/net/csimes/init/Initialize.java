@@ -30,7 +30,10 @@ public class Initialize {
 	public static File invenFile = new File(Initialize.rootDir + File.separator + "INVENTORY");
 	public static String invenPath = Initialize.rootDir + File.separator + "INVENTORY";
 	
-	public static HashMap<String,Page> pages = Initialize.createPages(new String[]{"MAIN", "credentials", "popup", "free1", "free2", "free3"});	
+	public static File orderFile = new File(Initialize.rootDir + File.separator + "ORDER");
+	public static String orderPath = Initialize.rootDir + File.separator + "ORDER";
+	
+	public static HashMap<String,Page> pages = Initialize.createPages(new String[]{"MAIN", "credentials", "popup"});	
 	public static HashMap<String,ImageIcon> icons = Initialize.loadIcons();
 	
 	public boolean isInternet;
@@ -74,7 +77,6 @@ public class Initialize {
 		
 		try {
 			if (!lockfile.createNewFile()) {
-				System.out.println("A Lock file has been created.. somehow");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -87,22 +89,22 @@ public class Initialize {
 		if (locked) {
 			if (!lockfile.delete()) {
 			System.err.println("Failed to delete a lock file.");
+			}if (!lockfile.delete()) {
+			System.err.println("Failed to delete a lock file.");
+			}if (!lockfile.delete()) {
+			System.err.println("Failed to delete a lock file.");
+			}if (!lockfile.delete()) {
+			System.err.println("Failed to delete a lock file.");
+			}if (!lockfile.delete()) {
+			System.err.println("Failed to delete a lock file.");
 			}
 		}
 	}
 	
 	private static HashMap<String,ImageIcon> loadIcons() {
-		HashMap<String,ImageIcon> images = new HashMap<String,ImageIcon>();
-		ArrayList<String> imagesList = new ArrayList<String>();
-		
-		ResourceControl.getResourceList(imagesList, "icons");
-		for (int i=0;i < imagesList.size(); i++) {
-			images.put(imagesList.get(i), new ImageIcon(ResourceControl.getResourceFile(imagesList.get(i))));
-		}
-		
-		return images;
+		return null;
 	}
-	
+
 	public void copyAccounts(String path) {
 		ArrayList<String> accsPath = new ArrayList<String>();
 		

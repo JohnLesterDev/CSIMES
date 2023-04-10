@@ -67,6 +67,7 @@ public class RectSimulate extends JFrame {
 		setUndecorated(true);
 		setSize(width, height);
 		setLayout(null);
+		setAlwaysOnTop(true);
 		setLocationRelativeTo(null);
 		setTitle("CSIMES - Rectangle Simulator :>");
 		//setIconImage(new ImageIcon(Thread.currentThread().getContextClassLoader().getResource("icon/csimes.png")).getImage());

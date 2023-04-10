@@ -1,8 +1,13 @@
 package net.csimes;
 
 import java.io.*;
+import java.awt.*;
+import java.net.*;
 import java.util.*;
 import javax.swing.*;
+import java.awt.geom.*;
+import java.awt.event.*;
+import javax.swing.border.*;
 
 import net.csimes.io.*;
 import net.csimes.img.*;
@@ -15,6 +20,7 @@ import net.csimes.util.*;
 import net.csimes.mouse.*;
 import net.csimes.table.*;
 import net.csimes.audio.*;
+import net.csimes.client.*;
 import net.csimes.panels.*;
 import net.csimes.splash.*;
 import net.csimes.listeners.*;
@@ -24,8 +30,35 @@ import net.csimes.listeners.*;
 
 public class App {
     
-	public static void test() {
+	public static void test() throws Exception {
+		/*JFrame root = new JFrame();
 		
+		root.setLayout(null);
+		root.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		root.setSize(444, 444);
+		
+		JButton btn = new JButton("TEST");
+		btn.setContentAreaFilled(false);
+		btn.setFocusable(false);
+		btn.setBorder(
+		 new LineBorder(Color.black) {
+					public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+						Graphics2D gg = (Graphics2D) g;
+						gg.setColor(getLineColor());
+						gg.draw(new RoundRectangle2D.Double(x, y, width, height, 45, 45));
+					}
+				}
+		);
+		btn.setBounds(55, 55, 55, 55);
+		btn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("bruh");
+			}
+		});
+		
+		root.getContentPane().add(btn);
+		root.setLocationRelativeTo(null);
+		root.setVisible(true);*/
 	}
 	
 	
@@ -33,6 +66,23 @@ public class App {
 		System.out.println(System.getProperty("java.io.tmpdir"));	
 
 		Initialize.LockFile(() -> {
+			Runnable lockRun = new Runnable() {
+				public void run() {
+					while (true) {
+						Initialize.LockFile();
+						
+						try {
+							Thread.sleep(6666);
+						} catch (Exception e) {
+							
+						}
+					}
+				}
+			};
+			Thread lockThread = new Thread(lockRun);
+			lockThread.setDaemon(true);
+			lockThread.start();
+
 			new Initialize();
 		}, () -> {
 			String msg_ = "Another instance of CSIMES is already running. Please close it and try again.";
@@ -49,7 +99,8 @@ public class App {
 	public static void fetchInventory(String path) {
 		ArrayList<String> categoryList = new ArrayList<String>();
         ArrayList<String> descriptionList = new ArrayList<String>();
-        ArrayList<Integer> quantityList = new ArrayList<Integer>();
+        ArrayList<String> unitList = new ArrayList<String>();
+        ArrayList<Float> quantityList = new ArrayList<Float>();
         ArrayList<Float> priceList = new ArrayList<Float>();
         
         try {
@@ -59,8 +110,9 @@ public class App {
                 String[] row = line.split("\\|");
                 categoryList.add(row[0].trim());
                 descriptionList.add(row[1].trim());
-                quantityList.add(Integer.parseInt(row[2].trim()));
-                priceList.add(Float.parseFloat(row[3].replace("$", "").trim()));
+                unitList.add(row[2].trim());
+                quantityList.add(Float.parseFloat(row[3].trim()));
+                priceList.add(Float.parseFloat(row[4].replace("$", "").trim()) * 55.0f);
             }
             reader.close();
 			} catch (Exception e) {
@@ -73,6 +125,7 @@ public class App {
 						i,
 						categoryList.get(i),
 						descriptionList.get(i),
+						unitList.get(i),
 						quantityList.get(i),
 						priceList.get(i)
 					)
@@ -100,8 +153,41 @@ public class App {
 		System.out.println("\n--------------------------\n\n");
 	}
 	
+	public static void daemonizer() throws Exception {
+		/*String path = System.getProperty("java.io.tmpdir") + File.separator + "LESTERDAEMONPROC.wtf";
+
+        File pidFile = new File(path);
+        if (pidFile.exists()) {
+            String pid = new String(new FileInputStream(pidFile).readAllBytes()).trim();
+
+            ProcessHandle.of(Long.parseLong(pid)).ifPresent(processHandle -> {
+                if (processHandle.isAlive() && processHandle.info().command().orElse("").startsWith("java")) {
+                    System.out.println("BWESIT");
+					CLIENT.sets();
+					return;
+                }
+            });
+            
+            pidFile.delete();
+        }
+
+		String jarFilePath = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getAbsolutePath();
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", jarFilePath, "dev.johnlester.server.App", "GRP7PASSWORDID", "aeralesteraxcelsonpaul");
+        Process process = pb.start();
+		
+		CLIENT.sets();
+		
+		System.out.println("[CSIMES] Lester's Daemon is running... PID: " + Long.toString(process.pid()));
+
+        try (FileOutputStream out = new FileOutputStream(pidFile)) {
+            out.write(Long.toString(process.pid()).getBytes());
+        }*/
+		CLIENT.sets();
+	}
 	
-    public static void main(String[] args) {	
+	
+    public static void main(String[] args) throws Exception {	
+		daemonizer();
 		printDeviceInfo();
 		
 		if (args.length == 0) {

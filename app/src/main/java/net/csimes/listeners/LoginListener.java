@@ -226,26 +226,26 @@ public class LoginListener implements DocumentListener, ActionListener {
 		if (isUser) {
 				switch (icontype) {
 				case "checked":
-					label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/acc_checked.png").getImage(), w, h)));
+					label.setIcon(new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/acc_checked.png")).getImage(), w, h)));
 					break;
 				case "wrong":
-					label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/acc_wrong.png").getImage(), w, h)));
+					label.setIcon(new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/acc_wrong.png")).getImage(), w, h)));
 					break;
 				case "normal":
-					label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/acc_normal.png").getImage(), w, h)));
+					label.setIcon(new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/acc_normal.png")).getImage(), w, h)));
 					break;
 				
 				}
 		} else {
 			switch (icontype) {
 			case "checked":
-				label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/pass_checked.png").getImage(), w, h)));
+				label.setIcon(new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/pass_checked.png")).getImage(), w, h)));
 				break;
 			case "wrong":
-				label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/pass_wrong.png").getImage(), w, h)));
+				label.setIcon(new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/pass_wrong.png")).getImage(), w, h)));
 				break;
 			case "normal":
-				label.setIcon(new ImageIcon(ImageControl.resizeImage(Initialize.icons.get("icons/pass_normal.png").getImage(), w, h)));
+				label.setIcon(new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/pass_normal.png")).getImage(), w, h)));
 				break;
 			
 			}

@@ -57,6 +57,8 @@ public class TransactionPanel {
 	
 	public JLabel detPRDID_, detDESC_, detSTOCK_, detPRC_;
 	
+	public JLabel ttl;
+	
 	
 	/**
 	* Creates an InventoryPanel instance with the MAINPAGE argument specified.
@@ -77,7 +79,7 @@ public class TransactionPanel {
 			detDESC_.setText(prd.name);
 			detDESC_.setToolTipText(prd.name);
 			detPRDID_.setText(String.format("%06d", prd.productID));
-			detSTOCK_.setText(String.format("%d", prd.quantity));
+			detSTOCK_.setText(String.format("%.1f", prd.quantity));
 			detPRC_.setText(String.format("%.2f", prd.totals()));
 		} else {
 			detDESC_.setText("");
@@ -97,17 +99,32 @@ public class TransactionPanel {
 			detPRC_.setText("");
 	}
 	
+	public void setAmoutDue() {
+		double amtDue = 0.00;
+		int rowCount = table.getRowCount();
+		System.out.println(rowCount);
+		
+		for (int i_ = 0; i_ < rowCount; i_++) {
+			if ((i_ == 0)) {
+				amtDue = Double.parseDouble(String.valueOf(table.getValueAt(i_, 4)));
+			} else {
+				amtDue += Double.parseDouble(String.valueOf(table.getValueAt(i_, 4)));
+			}
+		}
+		
+		this.ttl.setText(String.format("%.2f", amtDue));
+		
+	}
+	
 	public void addProductToTransaction(int id, int quantity) {
+		int rowCount = table.getRowCount();
 		if (Inventory.getProdsByID().containsKey(id) && Math.abs(quantity) > 0) {
 			Product prd = Inventory.getProdsByID().get(id);
-			
-			int rowCount = table.getRowCount();
-			
+
 			if (rowCount > 0) {
-				for (int i = 0; i < rowCount;  i++) {
-					int lastProdID = Integer.valueOf(String.valueOf(table.getValueAt(i, 0)));
+				int lastProdID = Integer.valueOf(String.valueOf(table.getValueAt(rowCount - 1, 0)));
 					if (id == lastProdID) {
-						int lastQuantity = (int) table.getValueAt(i, 2);
+						int lastQuantity = (int) table.getValueAt(rowCount - 1, 2);
 						quantity  += lastQuantity;
 						
 						if (quantity < 0) {
@@ -123,8 +140,8 @@ public class TransactionPanel {
 						}
 						
 						DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
-						tableModel.removeRow(i);
-						tableModel.insertRow(i, new Object[]{
+						tableModel.removeRow(rowCount  - 1);
+						tableModel.insertRow(rowCount  - 1, new Object[]{
 							String.format("%06d", prd.productID),
 							prd.name,
 							quantity,
@@ -132,9 +149,9 @@ public class TransactionPanel {
 							String.format("%.2f",  ((float) quantity) * prd.price)
 						});
 						table.setModel(tableModel);
+						this.setAmoutDue();
 						return;
 					}
-				}
 				
 				if (quantity < 0) {
 					JOptionPane.showMessageDialog(
@@ -157,6 +174,7 @@ public class TransactionPanel {
 							String.format("%.2f",  ((float) quantity) * prd.price)
 						});
 						table.setModel(tableModel);
+						this.setAmoutDue();
 			} else {
 				if (quantity < 0) {
 					JOptionPane.showMessageDialog(
@@ -179,6 +197,7 @@ public class TransactionPanel {
 					String.format("%.2f",  ((float) quantity) * prd.price)
 				});
 				table.setModel(tableModel);
+						this.setAmoutDue();
 			}	
 		}
 	}
@@ -192,11 +211,23 @@ public class TransactionPanel {
 			
 			return;
 		}
-		JLabel loadingLabel = new JLabel(
-			"Processing...",
-			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/loadingGIF.gif")).getImage(), 35, 35)),
-			JLabel.LEFT
-		);
+		
+		Runnable procRun = new Runnable() {
+			public void run() {
+				JOptionPane.showOptionDialog(
+					null,
+					"Processing Transaction...",
+					"CSIMES - Process Transaction",
+					JOptionPane.DEFAULT_OPTION,
+					JOptionPane.PLAIN_MESSAGE,
+					new ImageIcon(ResourceControl.getResourceFile("icons/loadingGIF_small.gif")),
+					new Object[]{},
+					null
+				);
+			}
+		};
+		Thread procThread = new Thread(procRun);
+		procThread.start();
 
 		for (int i = 0; i < rowCount; i++) {
 			int productId = Integer.valueOf(String.valueOf(table.getValueAt(i, 0)));
@@ -212,6 +243,13 @@ public class TransactionPanel {
 					  }
 				   }
 				}
+				
+				try {
+					procThread.interrupt();
+				} catch (Exception e) {
+					e.printStackTrace();
+				};
+				
 				JOptionPane.showMessageDialog(
 								null,
 								"Quantity result cannot be zero or negative. Please enter a valid quantity. (" + i + ")",
@@ -233,6 +271,13 @@ public class TransactionPanel {
 					  }
 				   }
 				}
+			
+			try {
+					procThread.interrupt();
+				} catch (Exception e) {
+					e.printStackTrace();
+				};
+				
 		
 			JOptionPane.showOptionDialog(
 			null, 
@@ -260,6 +305,7 @@ public class TransactionPanel {
 			new String[]{"OK"},
 			"OK"
 		);
+		this.setAmoutDue();
 	}
 	
 	public void deleteProductFromTransaction() {
@@ -285,12 +331,13 @@ public class TransactionPanel {
 		}
 	}
 	
-	public boolean decrementProductQuantity(int id, int quantity) {
+	public boolean decrementProductQuantity(int id, float quantity) {
 		Product prd = Inventory.getProductByID(id);
 		
 		if ((prd.quantity -= quantity) <= 0) {
 			return false;
 		}
+		
 		System.out.println(prd.quantity);
 		System.out.println(prd.totals());
 		
@@ -300,8 +347,10 @@ public class TransactionPanel {
 			prd.productID,
 			prd.category,
 			prd.name,
+			prd.unit,
 			prd.quantity,
-			prd.price
+			prd.price,
+			prd.dateTime
 		)).encryptProduct(), Inventory.inventoryPath);
 		
 		Inventory.refresh();
@@ -635,12 +684,42 @@ public class TransactionPanel {
 			(int) (((float) detPRCR.height) * 0.69),
 			detPRCR
 		);
+
+		Rectangle ttlBgR = new Rectangle(
+			(int) (((float) mpr.width) * 0.341),
+			(int) (((float) mpr.height) * 0.795),
+			(int) (((float) mpr.width) * 0.657),
+			(int) (((float) mpr.height) * 0.073)
+		);
+		JLabel ttlBg = this.mainp.createLabel(this.panel, "ttlbg", ttlBgR,  219, 219, 219);
 		
+		Rectangle ttlLabelR = new Rectangle(
+			(int) (((float) ttlBgR.width) * 0.589),
+			(int) (((float) ttlBgR.height) * 0.13),
+			(int) (((float) ttlBgR.width) * 0.209),
+			(int) (((float) ttlBgR.height) * 0.750)
+		);
+		JLabel ttlLabel = this.mainp.createLabel(
+			false, 
+			ttlBg,
+			"Amount Due:",
+			(int) (((float) detstckLR.height) * 0.69),
+			ttlLabelR
+		);
 		
-		
-		
-		
-		
+		Rectangle ttlR = new Rectangle(
+			(int) (((float) ttlBgR.width) * 0.777),
+			(int) (((float) ttlBgR.height) * 0.13),
+			(int) (((float) ttlBgR.width) * 0.209),
+			(int) (((float) ttlBgR.height) * 0.750)
+		);
+		this.ttl = this.mainp.createLabel(
+			false, 
+			ttlBg,
+			"0.00",
+			(int) (((float) detstckLR.height) * 0.69),
+			ttlR
+		);
 		
 		Runnable timeRunnable = new Runnable() {
 			@Override
