@@ -6,6 +6,20 @@ import dev.johnlester.server.csimes.*;
 public class App {
 	
 	public static void start() {
+		Runnable invenRun = new Runnable() {
+			public void run() {
+				while (true) {
+					try {
+						Inventory.refresh();
+						Thread.sleep(1000);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		new Thread(invenRun).start();
+		
 		try (LesterDaemon server = new LesterDaemon()) {
 			server.starts();
 		} catch (Exception e) {

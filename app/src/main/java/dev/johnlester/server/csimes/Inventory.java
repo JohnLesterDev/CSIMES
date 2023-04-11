@@ -158,6 +158,11 @@ public class Inventory {
 		return Inventory.prodsByID;
 	}
 	
+	public static ArrayList<Integer> getProdsID() {
+		
+		return new ArrayList<>(Inventory.prodsByID.keySet());
+	}
+	
 	public static ArrayList<String> getAllProdCategories() {
 		Inventory.allProdCategories = Inventory.setAllProdCategories();
 		

@@ -108,15 +108,17 @@ public class App {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] row = line.split("\\|");
-                categoryList.add(row[0].trim());
-                descriptionList.add(row[1].trim());
-                unitList.add(row[2].trim());
+				System.out.println(line);
+				System.out.println(row.length);
+                categoryList.add(row[1].trim());
+                descriptionList.add(row[2].trim());
                 quantityList.add(Float.parseFloat(row[3].trim()));
-                priceList.add(Float.parseFloat(row[4].replace("$", "").trim()) * 55.0f);
+                unitList.add(row[4].trim());
+                priceList.add(Float.parseFloat(row[5].replace("$", "").trim()) * 55.0f);
             }
             reader.close();
 			} catch (Exception e) {
-				System.err.println("Error: " + e.getMessage());
+				e.printStackTrace();
 			}
 			
 			for (int i = 0; i < categoryList.size(); i++) {
@@ -154,10 +156,10 @@ public class App {
 	}
 	
 	public static void daemonizer() throws Exception {
-		/*String path = System.getProperty("java.io.tmpdir") + File.separator + "LESTERDAEMONPROC.wtf";
+		String path = System.getProperty("java.io.tmpdir") + File.separator + "LESTERDAEMONPROC.wtf";
 
         File pidFile = new File(path);
-        if (pidFile.exists()) {
+        /*if (pidFile.exists()) {
             String pid = new String(new FileInputStream(pidFile).readAllBytes()).trim();
 
             ProcessHandle.of(Long.parseLong(pid)).ifPresent(processHandle -> {
@@ -182,7 +184,28 @@ public class App {
         try (FileOutputStream out = new FileOutputStream(pidFile)) {
             out.write(Long.toString(process.pid()).getBytes());
         }*/
-		CLIENT.sets();
+		try {
+			CLIENT.sets();
+			return;
+		} catch (java.net.ConnectException e) {
+			String jarFilePath = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getAbsolutePath();
+			ProcessBuilder pb = new ProcessBuilder("java", "-cp", jarFilePath, "dev.johnlester.server.App", "GRP7PASSWORDID", "aeralesteraxcelsonpaul");
+			Process process = pb.start();
+			
+			System.out.println("[CSIMES] Lester's Daemon is running... PID: " + Long.toString(process.pid()));
+			
+			try {
+				Thread.sleep(4000);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			
+			try (FileOutputStream out = new FileOutputStream(pidFile)) {
+				out.write(Long.toString(process.pid()).getBytes());
+			}
+
+			daemonizer();
+		}
 	}
 	
 	

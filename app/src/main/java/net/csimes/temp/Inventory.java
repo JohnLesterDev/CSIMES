@@ -167,6 +167,29 @@ public class Inventory {
 		return Inventory.prodsByID;
 	}
 	
+	public static ArrayList<Integer> getProdsID() {
+		String payload = "GRP7>FETCHES|||ALLIDS|||";
+		ArrayList<Integer> prd = null;
+		
+		try {
+			CLIENT.now.output.writeUTF(payload);
+			
+			String base64String = CLIENT.now.input.readUTF();
+			byte[] objectBytes = Base64.getDecoder().decode(base64String);
+			
+			// Deserialize the object
+			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			prd = (ArrayList<Integer>) ois.readObject();
+			ois.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return prd;
+	}
+	
 	public static ArrayList<String> getAllProdCategories() {
 		Inventory.allProdCategories = Inventory.setAllProdCategories();
 		

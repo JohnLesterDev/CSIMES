@@ -21,20 +21,13 @@ public class CLIENT {
 	public String IP, STOPS, SEPARATE, CLIENTID;
 	
 	
-	public static void sets() {
-		try {
-			CLIENT.now = new CLIENT();
-		} catch (Exception e) {
-			System.out.println("AAAHHHHHH");
-			e.printStackTrace();
-		};
-		
-		return;
+	public static void sets() throws ConnectException, UnknownHostException, IOException {
+		CLIENT.now = new CLIENT();
 	}
 	
 	
 	
-	public CLIENT() throws Exception {
+	public CLIENT() throws ConnectException, UnknownHostException, IOException {
 		this.IP = "127.0.0.1";
 		this.PORT = 6969;
 		

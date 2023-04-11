@@ -73,8 +73,8 @@ public class TransactionPanel {
 	}
 	
 	public void getProductDetails(int id) {
-		if (Inventory.getProdsByID().containsKey(id)) {
-			Product prd = Inventory.getProdsByID().get(id);
+		if (Inventory.getProdsID().contains(id)) {
+			Product prd = Inventory.getProductByID(id);
 			
 			detDESC_.setText(prd.name);
 			detDESC_.setToolTipText(prd.name);

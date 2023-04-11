@@ -66,7 +66,11 @@ public class LesterDaemon extends ServerSocket {
 			try {
 				if (input.available() > 0) {
 					String payload = input.readUTF();
-					String[] comPayloads = payload.split("|||");
+					System.out.println(payload);
+					String[] comPayloads = payload.split("\\|\\|\\|");
+					for (String cc : comPayloads) {
+						System.out.println(cc);
+					}
 					
 					if (comPayloads[0].equals("GRP7>EXIT")) {
 						client.close();
@@ -84,7 +88,7 @@ public class LesterDaemon extends ServerSocket {
 	}
 	
 	public void parsers(DataInputStream input, DataOutputStream output, String[] args) {
-		String primeCommand = args[0];
+		String primeCommand = args[0];   System.out.println("WTF: " + primeCommand);
 		
 		switch (primeCommand) {
 			case "GRP7>FETCHES" -> fetches(input, output, Arrays.copyOfRange(args, 1, args.length));
@@ -97,6 +101,7 @@ public class LesterDaemon extends ServerSocket {
 	
 	public void fetches(DataInputStream input, DataOutputStream output, String[] args) {
 		String fetchType = args[0];
+		System.out.println(fetchType);
 		
 		switch (fetchType) {
 			case "BYID":
@@ -117,6 +122,22 @@ public class LesterDaemon extends ServerSocket {
 				};
 				break;
 
+			case "ALLIDS":
+				try {
+					ArrayList<Integer> prdList = Inventory.getProdsID();
+
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					ObjectOutputStream oos = new ObjectOutputStream(baos);
+					oos.writeObject(prdList);
+					oos.close();
+					byte[] objectBytes = baos.toByteArray();
+
+					String base64String = Base64.getEncoder().encodeToString(objectBytes);
+					output.writeUTF(base64String);
+				} catch (Exception e) {
+					e.printStackTrace();
+				};
+				break;
 			default:
 				return;
 		}

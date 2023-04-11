@@ -28,10 +28,6 @@ application {
     // Define the main class for the application.
     mainClass = 'net.csimes.App'
     applicationName = 'CSIMES-Main'
-    
-    // Define the main class for the application.
-    mainClass = 'dev.johnlester.server.App'
-    applicationName = 'Lester-Daemon'
 }
 
 jar {
