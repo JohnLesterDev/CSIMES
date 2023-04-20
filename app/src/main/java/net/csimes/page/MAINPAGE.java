@@ -72,6 +72,8 @@ public class MAINPAGE {
 		Initialize.pages.put("MAIN", new Page("MAIN"));
 		Initialize.pages.get("MAIN").clean();
 
+		Initialize.currentAccount = null;
+
 		lp.page.setVisible(true);
 		lp.page.repaint();
 	}

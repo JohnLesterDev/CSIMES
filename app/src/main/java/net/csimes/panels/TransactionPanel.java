@@ -80,7 +80,7 @@ public class TransactionPanel {
 			detDESC_.setToolTipText(prd.name);
 			detPRDID_.setText(String.format("%06d", prd.productID));
 			detSTOCK_.setText(String.format("%.1f", prd.quantity));
-			detPRC_.setText(String.format("%.2f", prd.totals()));
+			detPRC_.setText(String.format("%.2f", prd.price));
 		} else {
 			detDESC_.setText("");
 			detDESC_.setToolTipText("");
