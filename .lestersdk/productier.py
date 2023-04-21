@@ -3,8 +3,9 @@ import string
 import random
 
 
-def main():
-	iterates = 50
+def main(iterates=-1):
+	if iterates == -1:
+		iterates = int(input("Product Count: "))
 	
 	all_product_names = []
 	all_letters = list(string.ascii_uppercase)
@@ -27,12 +28,13 @@ def main():
 	intout = 0
 	lvl = 0
 	
+	repeat = -1
+	
 	same_prd = []
 	
 	file_ = open("inventory.txt", "w")
 	
 	for i, _ in enumerate(range(iterates)):
-		print(i)
 		if (i % 25) == 0:
 			cout = 0
 		
@@ -48,11 +50,11 @@ def main():
 		ran_c = random.choice(all_letters)
 		ran_int = random.randint(1, 9)
 		
-		name = list(str(ran_int) + const_c + ran_c + all_letters[cout] + str(intout))
+		name = list(str(ran_int) + const_c + ran_c + all_letters[cout] + ran_c + str(intout))
 		random.shuffle(name)
 		
 		name = "PRD" + "".join(name)
-
+		
 		category = random.choice(all_product_categories)
 		is_whole, unit_ = all_product_info[category]
 		
@@ -67,9 +69,9 @@ def main():
 		price = random.uniform(15.99, 150.99)
 		
 		if i == iterates - 1:
-			file_.write(f"{category} | {name} | {unit} | {quantity} | {price}")
+			file_.write(f"| {category} | {name} | {unit} | {quantity} | {price} |")
 		else:
-			file_.write(f"{category} | {name} | {unit} | {quantity} | {price}\n")
+			file_.write(f"| {category} | {name} | {unit} | {quantity} | {price} |\n")
 
 		cout += 1
 		intout += 1
@@ -79,4 +81,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-	print("wtf")
