@@ -55,6 +55,7 @@ public class LesterDaemon extends ServerSocket {
 				}
 			};
 			Thread clientHandlerThread = new Thread(clientHandlerRun);
+			clientHandlerThread.setDaemon(true);
 			this.clientThreads.add(clientHandlerThread);
 			
 			clientHandlerThread.start();

@@ -17,7 +17,7 @@ import net.csimes.splash.*;
 
 
 public class Account implements Serializable {
-	
+
 	private String userName;
 	private String passwd;
 	private long UID;

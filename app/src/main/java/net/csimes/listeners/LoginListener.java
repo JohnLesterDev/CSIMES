@@ -33,13 +33,8 @@ public class LoginListener implements DocumentListener, ActionListener {
 		Initialize.pages.get("MAIN").clean();
 		MAINPAGE mp = new MAINPAGE(Initialize.pages.get("MAIN"), acc);
 		
-		String msg_ = "Logged in successfully! Redirecting to Dashboard...";
-		JOptionPane.showMessageDialog(null,
-			msg_, 
-			"CSIMES - Login Successful!", 
-			JOptionPane.INFORMATION_MESSAGE,
-			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
-			);
+		Initialize.currentAccount = acc;
+		
 		mp.page.setVisible(true);
 		mp.paints();
 		mp.page.revalidate();

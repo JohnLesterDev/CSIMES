@@ -11,14 +11,16 @@ public class App {
 				while (true) {
 					try {
 						Inventory.refresh();
-						Thread.sleep(1000);
+						Thread.sleep(60000);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
 			}
 		};
-		new Thread(invenRun).start();
+		Thread t = new Thread(invenRun);
+		t.setDaemon(true);
+		t.start();
 		
 		try (LesterDaemon server = new LesterDaemon()) {
 			server.starts();

@@ -20,6 +20,8 @@ import net.csimes.splash.*;
 
 
 public class Initialize {
+	public static Account currentAccount = null;
+	
 	private static String lockFilePath = System.getProperty("java.io.tmpdir");
 	private static String rootPartition = System.getenv("SystemDrive");
 	public static String rootDir = Initialize.getRootPartition() + File.separator + "CSIMES";

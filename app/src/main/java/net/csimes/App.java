@@ -108,12 +108,12 @@ public class App {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] row = line.split("\\|");
-				System.out.println(line);
+				System.out.println(Arrays.toString(row));
 				System.out.println(row.length);
                 categoryList.add(row[1].trim());
                 descriptionList.add(row[2].trim());
-                quantityList.add(Float.parseFloat(row[3].trim()));
-                unitList.add(row[4].trim());
+                unitList.add(row[3].trim());
+                quantityList.add(Float.parseFloat(row[4].trim()));
                 priceList.add(Float.parseFloat(row[5].replace("$", "").trim()) * 55.0f);
             }
             reader.close();
