@@ -33,127 +33,118 @@ public class Inventory {
 	
 	
 	private static ArrayList<Integer> setAllID() {
-		ArrayList<Integer> allID_ = new ArrayList<Integer>();
-		allID_.add(0);
+		String payload = "GRP7>SETS|||SETALLID";
+		ArrayList<Integer> allID_ = null;
 		
-		if (Inventory.inventoryFile.listFiles() != null) {
-			for (File file : Inventory.inventoryFile.listFiles()) {
-				Product prd = ProductIO.read(file.getAbsolutePath());
-				allID_.add(prd.productID);
-			}
+		try {
+			CLIENT.now.output.writeUTF(payload);
 			
-			Inventory.allID = allID_;
+			String base64String = CLIENT.now.input.readUTF();
+			byte[] objectBytes = Base64.getDecoder().decode(base64String);
 			
-			return allID_;
-		} else {
-			allID_.add(0);
-			Inventory.allID = allID_;
-			return allID_;
+			// Deserialize the object
+			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			allID_ = (ArrayList<Integer>) ois.readObject();
+			ois.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
+		
+		return allID_;
 	}
 	
 	private static Integer setMaxID() {
+		String payload = "GRP7>SETS|||SETMAXID";
+		Integer maxID_ = null;
+		
 		try {
-			Inventory.allID = Inventory.setAllID();
+			CLIENT.now.output.writeUTF(payload);
 			
-			if (Inventory.allID != null) {
-				Integer maxID_ = (Integer) Collections.max(Inventory.allID);
-				Inventory.maxID = maxID_;
-				
-				return maxID_;
-			} else {
-				return null;
-			}
-		}catch (Exception e) {
-			System.err.println("Exception: " + e.getMessage());
-			Throwable cause = e.getCause();
-			if (cause != null) {
-				System.err.println("Cause: " + cause.getMessage());
-				cause.printStackTrace();
-			} else {
-				e.printStackTrace();
-			}
+			String base64String = CLIENT.now.input.readUTF();
+			byte[] objectBytes = Base64.getDecoder().decode(base64String);
+			
+			// Deserialize the object
+			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			maxID_ = (Integer) ois.readObject();
+			ois.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 1;
 		}
 		
-		return 1;
+		return maxID_;
 	}
 	
 	private static HashMap<Integer,Product> setProdsToID() {
-		HashMap<Integer,Product> prodsByID_ = new HashMap<Integer,Product>();
+		String payload = "GRP7>SETS|||SETPRODSTOID";
+		HashMap<Integer,Product> prodID_ = null;
 		
-		if (Inventory.inventoryFile.listFiles() != null) {
-			for (File file : Inventory.inventoryFile.listFiles()) {
-				Product prd = ProductIO.read(file.getAbsolutePath());
-				
-				prodsByID_.put((Integer) prd.productID, prd);
-			}
+		try {
+			CLIENT.now.output.writeUTF(payload);
 			
-			Inventory.prodsByID = prodsByID_;
+			String base64String = CLIENT.now.input.readUTF();
+			byte[] objectBytes = Base64.getDecoder().decode(base64String);
 			
-			return prodsByID_;
-		} else {
+			// Deserialize the object
+			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			prodID_ = (HashMap<Integer,Product>) ois.readObject();
+			ois.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
+		
+		return prodID_;
 	}
 	
 	private static ArrayList<String> setAllProdCategories() {
-		ArrayList<String> allProdCategories_ = new ArrayList<String>();
-		allProdCategories_.add("Categories");
+		String payload = "GRP7>SETS|||SETALLPRODCAT";
+		ArrayList<String> prodCat_ = null;
 		
-		if (Inventory.inventoryFile.listFiles() != null) {
-			for (File file : Inventory.inventoryFile.listFiles()) {
-				Product prd = ProductIO.read(file.getAbsolutePath());
-				
-				if (!allProdCategories_.contains(prd.category)) {
-					allProdCategories_.add(prd.category);
-				}
-			}
+		try {
+			CLIENT.now.output.writeUTF(payload);
 			
-			Inventory.allProdCategories = allProdCategories_;
+			String base64String = CLIENT.now.input.readUTF();
+			byte[] objectBytes = Base64.getDecoder().decode(base64String);
 			
-			return allProdCategories_;
-		} else {
+			// Deserialize the object
+			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			prodCat_ = (ArrayList<String>) ois.readObject();
+			ois.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
+		
+		return prodCat_;
 	}
 	
 	private static Object[][] setProductToTable() {
-		Inventory.prodsByID = Inventory.setProdsToID();
-		Inventory.maxID = Inventory.setMaxID();
+		String payload = "GRP7>SETS|||SETPRODTABLE";
+		Object[][] prodTable_ = null;
 		
-		ArrayList<ArrayList<Object>> prdArrays = new ArrayList<ArrayList<Object>>();
-		
-		if (Inventory.inventoryFile.listFiles() != null) {
-			for (Product prd : Inventory.prodsByID.values()) {
-				ArrayList<Object> prdArray = new ArrayList<Object>();
-				
-				prdArray.add(String.format("%06d", prd.productID));
-				prdArray.add(prd.category);
-				prdArray.add(prd.name);
-				prdArray.add(prd.quantity);
-				prdArray.add(prd.unit);
-				prdArray.add(String.format("%.2f", prd.price));				
-				prdArray.add(String.format("%.2f", prd.totals()));	
-				prdArray.add(prd.dateTime);
-
-				prdArrays.add(prdArray);
-			}
+		try {
+			CLIENT.now.output.writeUTF(payload);
 			
-			Object[][] obj = new Object[prdArrays.size()][10];
+			String base64String = CLIENT.now.input.readUTF();
+			byte[] objectBytes = Base64.getDecoder().decode(base64String);
 			
-			for (int k = 0; k < prdArrays.size(); k++) {
-				for (int j = 0; j < prdArrays.get(0).size(); j++) {
-					obj[k][j] = prdArrays.get(k).get(j);
-				}
-			}
-			
-			Arrays.sort(obj, Comparator.comparingInt(a -> Integer.parseInt((String) a[0])));
-			
-			Inventory.prodsByTable = obj;
-			return obj;
-		} else {
+			// Deserialize the object
+			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			prodTable_ = (Object[][]) ois.readObject();
+			ois.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
+		
+		return prodTable_;
 	}
 	
 	public static Integer getMaxID() {
@@ -264,11 +255,11 @@ public class Inventory {
 			
 			prd.category = (String) obj[0];
 			prd.name = (String) obj[1];
-			prd.quantity += (Integer) obj[2];
+			prd.quantity += (Float) obj[2];
 			prd.price = (Float) obj[3];
 			
 			prd.totals();
-			
+			System.out.println(prd.name);
 			Product newPrd = new SecurityControl(prd).encryptProduct();
 			ProductIO.write(newPrd, Inventory.inventoryPath);
 			

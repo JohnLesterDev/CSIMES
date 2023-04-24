@@ -15,6 +15,7 @@ import net.csimes.res.*;
 import net.csimes.init.*;
 import net.csimes.page.*;
 import net.csimes.temp.*;
+import net.csimes.client.*;
 import net.csimes.splash.*;
 
 
@@ -65,6 +66,13 @@ public class Initialize {
 			}
 			
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				
+				try {
+					CLIENT.now.output.writeUTF("GRP7>EXIT");
+				} catch (Exception e_) {
+					
+				};
+				
 				Initialize.LockFile(true);
 			}));
 			

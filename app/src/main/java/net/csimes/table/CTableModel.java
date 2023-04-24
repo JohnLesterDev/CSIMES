@@ -25,6 +25,9 @@ import net.csimes.listeners.*;
 
 
 public class CTableModel extends DefaultTableModel {
+	private String[] colNames;
+	private Object[][] data;
+	
 	public CTableModel(Object[][] data, String[] columnNames) {
 		super(data, columnNames);
 	}
