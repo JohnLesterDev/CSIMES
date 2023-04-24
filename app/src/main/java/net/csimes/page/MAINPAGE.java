@@ -127,6 +127,9 @@ public class MAINPAGE {
 			
 			mainPanel.repaint();
 			table.repaint();
+			
+			mainPanel.revalidate();
+			table.revalidate();
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(
@@ -147,9 +150,9 @@ public class MAINPAGE {
 			sorter.setRowFilter(RowFilter.regexFilter("(?i).*" + input + ".*", 0, 1, 2, 4));
 		} else {
 			table.setRowSorter(null);
-			table.setModel(
+			SwingUtilities.invokeLater(() -> { table.setModel(
 					new CTableModel(this.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Unit", "Unit Price", "Total Amount", "Date"})
-			);
+			);});
 		}
 	}
 	
@@ -576,7 +579,7 @@ public class MAINPAGE {
 						id, 
 						cbc.getSelectedItem(), 
 						desc.getText(),
-						Integer.parseInt(quan.getText()),
+						Float.parseFloat(quan.getText()),
 						Float.parseFloat(prc.getText())
 					);
 					
@@ -708,6 +711,7 @@ public class MAINPAGE {
 		
 		InventoryPanel mp_one = new InventoryPanel(this);
 		this.table = mp_one.table;
+
 		this.spane = mp_one.spane;
 		this.mainPanel = mp_one.panel;
 		this.mainPanels.put("inventorypanel", mp_one.panel);

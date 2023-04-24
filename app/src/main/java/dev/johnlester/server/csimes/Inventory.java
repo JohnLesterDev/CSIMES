@@ -23,7 +23,7 @@ public class Inventory {
 	private static Integer maxID = Inventory.setMaxID();
 	
 	
-	private static ArrayList<Integer> setAllID() {
+	public static ArrayList<Integer> setAllID() {
 		ArrayList<Integer> allID_ = new ArrayList<Integer>();
 		allID_.add(0);
 		
@@ -43,7 +43,7 @@ public class Inventory {
 		}
 	}
 	
-	private static Integer setMaxID() {
+	public static Integer setMaxID() {
 		try {
 			Inventory.allID = Inventory.setAllID();
 			
@@ -69,7 +69,7 @@ public class Inventory {
 		return 1;
 	}
 	
-	private static HashMap<Integer,Product> setProdsToID() {
+	public static HashMap<Integer,Product> setProdsToID() {
 		HashMap<Integer,Product> prodsByID_ = new HashMap<Integer,Product>();
 		
 		if (Inventory.inventoryFile.listFiles() != null) {
@@ -87,7 +87,7 @@ public class Inventory {
 		}
 	}
 	
-	private static ArrayList<String> setAllProdCategories() {
+	public static ArrayList<String> setAllProdCategories() {
 		ArrayList<String> allProdCategories_ = new ArrayList<String>();
 		allProdCategories_.add("Categories");
 		
@@ -108,7 +108,7 @@ public class Inventory {
 		}
 	}
 	
-	private static Object[][] setProductToTable() {
+	public static Object[][] setProductToTable() {
 		Inventory.prodsByID = Inventory.setProdsToID();
 		Inventory.maxID = Inventory.setMaxID();
 		

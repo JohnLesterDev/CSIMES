@@ -338,9 +338,6 @@ public class TransactionPanel {
 			return false;
 		}
 		
-		System.out.println(prd.quantity);
-		System.out.println(prd.totals());
-		
 		prd.filePath.delete();
 		
 		ProductIO.write(new SecurityControl(new Product(
@@ -380,7 +377,7 @@ public class TransactionPanel {
 		this.table = new JTable();
 
 		this.table.setModel(
-			new CTableModel(null, new String[]{"Product ID", "Item Description", "Quantity", "Unit Price", "Total Price"})
+			new CTableModel(null, new String[]{"Product Code", "Item Description", "Quantity", "Unit Price", "Total Price"})
 		);
 		
 
@@ -436,8 +433,22 @@ public class TransactionPanel {
 			false, 
 			this.panel,
 			"Order ID:",
-			(int) (((float) iflR.height) * 0.8),
+			(int) (((float) iflR.height) * 0.76),
 			iflR
+		);
+		
+		Rectangle cosflR = new Rectangle(
+			(int) (((float) mpr.width) * 0.032),
+			(int) (((float) mpr.height) * 0.153),
+			(int) (((float) mpr.width) * 0.084),
+			(int) (((float) mpr.height) * 0.042)
+		);
+		JLabel cosforLabel = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"Costumer:",
+			(int) (((float) cosflR.height) * 0.76),
+			cosflR
 		);
 		
 		Rectangle dlR = new Rectangle(
@@ -485,7 +496,7 @@ public class TransactionPanel {
 		JLabel inProdIDLabel = this.mainp.createLabel(
 			false, 
 			inBg,
-			"Product ID:",
+			"Product Code:",
 			(int) (((float) inProdIDLabelR.height) * 0.55),
 			inProdIDLabelR
 		);
@@ -515,7 +526,7 @@ public class TransactionPanel {
 			inBg, 
 			"ProductID", 
 			inProdIDLabelFR,
-			"Product ID",
+			"Product Code",
 			() -> {}
 		);
 		this.maintf = inProdIDLabelF;
@@ -582,7 +593,7 @@ public class TransactionPanel {
 		JLabel detProdIDL = this.mainp.createLabel(
 			false, 
 			detBg,
-			"Product ID:",
+			"Product Code:",
 			(int) (((float) detProdIDLR.height) * 0.69),
 			detProdIDLR
 		);

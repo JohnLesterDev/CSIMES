@@ -64,6 +64,16 @@ public class App {
 	
 	public static void start() {
 		System.out.println(System.getProperty("java.io.tmpdir"));	
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				
+				try {
+					CLIENT.now.output.writeUTF("GRP7>EXIT");
+				} catch (Exception e_) {
+					
+				};
+				
+				Initialize.LockFile(true);
+			}));
 
 		Initialize.LockFile(() -> {
 			Runnable lockRun = new Runnable() {
@@ -72,7 +82,7 @@ public class App {
 						Initialize.LockFile();
 						
 						try {
-							Thread.sleep(6666);
+							Thread.sleep(30000);
 						} catch (Exception e) {
 							
 						}
@@ -124,7 +134,7 @@ public class App {
 			for (int i = 0; i < categoryList.size(); i++) {
 				ProductIO.write(new SecurityControl(
 					new Product(
-						i,
+						i + 1,
 						categoryList.get(i),
 						descriptionList.get(i),
 						unitList.get(i),

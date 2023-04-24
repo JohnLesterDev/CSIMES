@@ -34,7 +34,7 @@ public class PRDIDListener implements DocumentListener {
 	
 	public void insertUpdate(DocumentEvent e) {
 		JTextField textField = (JTextField) e.getDocument().getProperty("parent");
-		if (!textField.getText().equals("Product ID") && !textField.getText().equals("")) {
+		if (!textField.getText().equals("Product Code") && !textField.getText().equals("")) {
 			this.tpl.getProductDetails(Integer.valueOf(textField.getText()));
 		} else {
 			 this.tpl.getProductDetails("hmm");
