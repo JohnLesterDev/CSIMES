@@ -35,7 +35,7 @@ public class LesterDaemon extends ServerSocket {
 	public void starts() throws IOException, UnknownHostException {
 		while (true) {
 			Socket clientSocket = accept();
-			System.out.println("[CONNECT]: A client has been connected. IP = " + (((InetSocketAddress) clientSocket.getRemoteSocketAddress()).getAddress()).toString().replace("/", ""));  
+			System.out.println("[CONNECT]: A client has been connected. IP 😄😄😅 = " + (((InetSocketAddress) clientSocket.getRemoteSocketAddress()).getAddress()).toString().replace("/", ""));  
 
 			DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
 			DataInputStream input = new DataInputStream(clientSocket.getInputStream());
@@ -85,6 +85,9 @@ public class LesterDaemon extends ServerSocket {
 		
 		return;
 	}
+	
+	// [GRP7>SETS, SETPRODTABLE]
+	// [GRP7>SETS, SETPRODTABLE]
 	
 	public void parsers(Socket client, DataInputStream input, DataOutputStream output, String[] args) {
 		String primeCommand = args[0];
@@ -180,15 +183,17 @@ public class LesterDaemon extends ServerSocket {
 				break;
 			case "SETPRODSTOID":
 				try {
-					HashMap<Integer,Product> prodID = Inventory.setProdsToID();
+					HashMap<Integer, Product> prodID = Inventory.setProdsToID();
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					ObjectOutputStream oos = new ObjectOutputStream(baos);
 					oos.writeObject(prodID);
+					oos.flush();
 					oos.close();
 					byte[] objectBytes = baos.toByteArray();
 
-					String base64String = Base64.getEncoder().encodeToString(objectBytes);
-					output.writeUTF(base64String);
+					output.writeInt(objectBytes.length);
+					output.write(objectBytes);
+					output.flush();
 				} catch (Exception e) {
 					e.printStackTrace();
 				};
@@ -217,8 +222,9 @@ public class LesterDaemon extends ServerSocket {
 					oos.close();
 					byte[] objectBytes = baos.toByteArray();
 
-					String base64String = Base64.getEncoder().encodeToString(objectBytes);
-					output.writeUTF(base64String);
+					output.writeInt(objectBytes.length);
+					output.write(objectBytes);
+					output.flush();
 				} catch (Exception e) {
 					e.printStackTrace();
 				};

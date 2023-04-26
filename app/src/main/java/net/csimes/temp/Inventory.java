@@ -78,26 +78,27 @@ public class Inventory {
 		return maxID_;
 	}
 	
-	private static HashMap<Integer,Product> setProdsToID() {
+	private static HashMap<Integer, Product> setProdsToID() {
 		String payload = "GRP7>SETS|||SETPRODSTOID";
-		HashMap<Integer,Product> prodID_ = null;
-		
+		HashMap<Integer, Product> prodID_ = null;
+
 		try {
 			CLIENT.now.output.writeUTF(payload);
-			
-			String base64String = CLIENT.now.input.readUTF();
-			byte[] objectBytes = Base64.getDecoder().decode(base64String);
-			
+
+			int objectLength = CLIENT.now.input.readInt();
+			byte[] objectBytes = new byte[objectLength];
+			CLIENT.now.input.readFully(objectBytes);
+
 			// Deserialize the object
 			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
 			ObjectInputStream ois = new ObjectInputStream(bais);
-			prodID_ = (HashMap<Integer,Product>) ois.readObject();
+			prodID_ = (HashMap<Integer, Product>) ois.readObject();
 			ois.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return prodID_;
 	}
 	
@@ -131,9 +132,9 @@ public class Inventory {
 		try {
 			CLIENT.now.output.writeUTF(payload);
 			
-			String base64String = CLIENT.now.input.readUTF();
-			byte[] objectBytes = Base64.getDecoder().decode(base64String);
-			
+			int objectLength = CLIENT.now.input.readInt();
+			byte[] objectBytes = new byte[objectLength];
+			CLIENT.now.input.readFully(objectBytes);
 			// Deserialize the object
 			ByteArrayInputStream bais = new ByteArrayInputStream(objectBytes);
 			ObjectInputStream ois = new ObjectInputStream(bais);

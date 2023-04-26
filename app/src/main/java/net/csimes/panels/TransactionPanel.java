@@ -446,7 +446,7 @@ public class TransactionPanel {
 		JLabel cosforLabel = this.mainp.createLabel(
 			false, 
 			this.panel,
-			"Costumer:",
+			"Customer:",
 			(int) (((float) cosflR.height) * 0.76),
 			cosflR
 		);

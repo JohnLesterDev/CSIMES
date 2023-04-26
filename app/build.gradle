@@ -35,7 +35,7 @@ jar {
         attributes 'Main-Class': 'net.csimes.App'
     }
     
-    archiveFileName.set('CSIMES-0.7.9.jar')
+    archiveFileName.set('CSIMES-0.7.12.jar')
     destinationDir(file("$rootDir"))
     
     from {
