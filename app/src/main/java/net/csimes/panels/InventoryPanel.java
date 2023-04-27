@@ -3,10 +3,12 @@ package net.csimes.panels;
 import java.io.*;													 
 import java.awt.*;										 	         
 import java.util.*;													 
+import java.beans.*;													 
 import javax.swing.*;												 
 import java.awt.image.*;
 import java.awt.event.*;											 
 import javax.swing.text.*;											 
+import javax.swing.event.*;											 
 import javax.swing.table.*;										 
 import javax.swing.border.*;
 
@@ -44,7 +46,7 @@ public class InventoryPanel {
 	public Sidebars panel;
 	
 	/** The JTable that will be used for displaying information about the product*/
-	public JTable table;
+	public CTable table;
 	
 	/** The JScrollPane that will be used for the table field.*/
 	public JScrollPane spane;
@@ -56,6 +58,7 @@ public class InventoryPanel {
 	public InventoryPanel(MAINPAGE mainpage) {
 		this.mainp = mainpage;
 		this.panel = this.mainp.createEmptyMainPane("inventorypanel");
+		this.panel.isShown = true;
 		this.setPanel();
 		this.setComponents();
 		this.setHotkeys();
@@ -76,10 +79,10 @@ public class InventoryPanel {
 	* 
 	*/
 	public void setComponents() {
-		this.table = new JTable();
+		this.table = new CTable(this.mainp);
 
 		this.table.setModel(
-			new CTableModel(this.mainp.getProducts(), new String[]{"Product ID", "Category", "Description", "Quantity", "Unit", "Unit Price", "Total Amount", "Date"})
+			new CTableModel(this.mainp.getProducts(), new String[]{"Product ID", "Category", "Item Description", "Quantity", "Unit", "Unit Price", "Total Amount", "Date"})
 		);
 		
 
@@ -88,7 +91,6 @@ public class InventoryPanel {
 		table.getTableHeader().setReorderingAllowed(false);
 
 		CTableRenderer renderer = new CTableRenderer();
-        renderer.setHorizontalAlignment(SwingConstants.CENTER);
         table.setDefaultRenderer(Object.class, renderer);
 
 		this.spane = new JScrollPane(this.table);
@@ -96,6 +98,16 @@ public class InventoryPanel {
 		panel.addMouseListener(new MouseAdapter() {
 			public void mouseEntered(MouseEvent e) {
 				panel.requestFocusInWindow();
+			}
+		});
+		
+		this.table.setColumnWidths();
+		this.table.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getPropertyName().equals("model")) {
+					table.setColumnWidths();
+				}
 			}
 		});
 		
@@ -131,6 +143,7 @@ public class InventoryPanel {
 		((AbstractDocument)searchF.getDocument()).addDocumentListener(new SearchListener(this.table, this.mainp));
 	
 		this.panel.repaint();
+		this.panel.setVisible(false);
 	}
 	
 	/**
@@ -157,6 +170,17 @@ public class InventoryPanel {
 		table.getActionMap().put("modPRDAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				tmpmp.modifyProduct();
+			}
+		});
+		
+		table.getInputMap().put(KeyStroke.getKeyStroke("alt W"), "modWPRDAction");
+		table.getActionMap().put("modWPRDAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				TableColumnModel columnModel = table.getColumnModel();
+				for (int i = 0; i < columnModel.getColumnCount(); i++) {
+					int columnWidth = columnModel.getColumn(i).getWidth();
+					System.out.println("Column " + i + " width: " + columnWidth + " PERCENT TO WIDTH: " + String.format("%.3f", ((float) columnWidth / mainp.rootWidth)));
+				}
 			}
 		});
 	}

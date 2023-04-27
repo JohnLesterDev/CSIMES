@@ -27,11 +27,24 @@ import net.csimes.listeners.*;
 
 
 
+/**
 
+The App class contains the main methods for initializing the application, fetching inventory data from a file, and
+printing device information to the console. It also includes a test method that is currently commented out.
+The class imports several packages including java.io, java.awt, java.net, java.util, javax.swing, java.awt.geom,
+java.awt.event, and javax.swing.border.
+The class also imports several custom packages including net.csimes.io, net.csimes.img, net.csimes.sec, net.csimes.res,
+net.csimes.init, net.csimes.page, net.csimes.temp, net.csimes.util, net.csimes.mouse, net.csimes.table, net.csimes.audio,
+net.csimes.client, net.csimes.panels, net.csimes.splash, and net.csimes.listeners.
+*/
 public class App {
     
+	/**
+ * A test method that is currently commented out.
+ * @throws Exception
+ */
 	public static void test() throws Exception {
-		/*JFrame root = new JFrame();
+		JFrame root = new JFrame();
 		
 		root.setLayout(null);
 		root.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,10 +71,12 @@ public class App {
 		
 		root.getContentPane().add(btn);
 		root.setLocationRelativeTo(null);
-		root.setVisible(true);*/
+		root.setVisible(true);
 	}
 	
-	
+	/**
+ * The main method that starts the application.
+ */
 	public static void start() {
 		System.out.println(System.getProperty("java.io.tmpdir"));	
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -165,35 +180,23 @@ public class App {
 		System.out.println("\n--------------------------\n\n");
 	}
 	
+	/**
+
+This method sets up a daemon process that runs the application if it's not already running.
+
+It uses the CLIENT object to check if the application is already running, and if not, it starts a new process using ProcessBuilder.
+
+The PID of the new process is written to a file named LESTERDAEMONPROC.wtf in the temporary directory.
+
+The method then recursively calls itself to keep the daemon process running.
+
+@throws Exception if an error occurs during the process
+*/
 	public static void daemonizer() throws Exception {
 		String path = System.getProperty("java.io.tmpdir") + File.separator + "LESTERDAEMONPROC.wtf";
 
         File pidFile = new File(path);
-        /*if (pidFile.exists()) {
-            String pid = new String(new FileInputStream(pidFile).readAllBytes()).trim();
-
-            ProcessHandle.of(Long.parseLong(pid)).ifPresent(processHandle -> {
-                if (processHandle.isAlive() && processHandle.info().command().orElse("").startsWith("java")) {
-                    System.out.println("BWESIT");
-					CLIENT.sets();
-					return;
-                }
-            });
-            
-            pidFile.delete();
-        }
-
-		String jarFilePath = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getAbsolutePath();
-        ProcessBuilder pb = new ProcessBuilder("java", "-cp", jarFilePath, "dev.johnlester.server.App", "GRP7PASSWORDID", "aeralesteraxcelsonpaul");
-        Process process = pb.start();
-		
-		CLIENT.sets();
-		
-		System.out.println("[CSIMES] Lester's Daemon is running... PID: " + Long.toString(process.pid()));
-
-        try (FileOutputStream out = new FileOutputStream(pidFile)) {
-            out.write(Long.toString(process.pid()).getBytes());
-        }*/
+        
 		try {
 			CLIENT.sets();
 			return;
@@ -218,7 +221,26 @@ public class App {
 		}
 	}
 	
-	
+	/**
+
+The App class serves as the main entry point for the CSIMES application.
+This class includes several static methods that perform various functions.
+Available methods:
+test() - This method can be used for testing and is currently commented out.
+start() - This method initializes the application, acquires a file lock,
+and runs the Initialize class to start the main program.
+fetchInventory(String path) - This method reads data from a file at the given
+path and writes it to the Inventory inventoryPath.
+printDeviceInfo() - This method prints out device and operating system information.
+daemonizer() - This method is used to daemonize the process.
+main(String[] args) - This method is the main entry point for the application and
+simply calls the start() method.
+This class also imports various classes and packages, including java.io, java.awt,
+java.net, java.util, javax.swing, net.csimes.io, net.csimes.img, net.csimes.sec,
+net.csimes.res, net.csimes.init, net.csimes.page, net.csimes.temp, net.csimes.util,
+net.csimes.mouse, net.csimes.table, net.csimes.audio, net.csimes.client, net.csimes.panels,
+net.csimes.splash, and net.csimes.listeners.
+*/
     public static void main(String[] args) throws Exception {	
 		daemonizer();
 		printDeviceInfo();

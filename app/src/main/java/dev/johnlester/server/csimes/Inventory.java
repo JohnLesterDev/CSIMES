@@ -121,10 +121,10 @@ public class Inventory {
 				prdArray.add(String.format("%06d", prd.productID));
 				prdArray.add(prd.category);
 				prdArray.add(prd.name);
-				prdArray.add(prd.quantity);
+				prdArray.add(String.format("%.1f", prd.quantity));
 				prdArray.add(prd.unit);
-				prdArray.add(String.format("%.2f", prd.price));				
-				prdArray.add(String.format("%.2f", prd.totals()));	
+				prdArray.add(String.format("%,.2f", prd.price));				
+				prdArray.add(String.format("%,.2f", prd.totals()));	
 				prdArray.add(prd.dateTime);
 
 				prdArrays.add(prdArray);

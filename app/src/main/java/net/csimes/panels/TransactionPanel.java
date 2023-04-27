@@ -4,10 +4,13 @@ import java.io.*;
 import java.awt.*;										 	         
 import java.util.*;													 
 import java.time.*;													 
+import java.beans.*;													 
 import javax.swing.*;												 
 import java.awt.image.*;
 import java.awt.event.*;											 
+import javax.imageio.*;											 
 import javax.swing.text.*;											 
+import javax.swing.event.*;											 
 import javax.swing.table.*;										 
 import javax.swing.border.*;
 
@@ -45,7 +48,7 @@ public class TransactionPanel {
 	public Sidebars panel;
 	
 	/** The JTable that will be used for displaying information about the product*/
-	public JTable table;
+	public CTable table;
 	
 	public String dateTimeString = "";
 	
@@ -53,11 +56,11 @@ public class TransactionPanel {
 	public JScrollPane spane;
 	
 	public Thread thread;
-	public JTextField maintf;
+	public JTextField maintf, incashLabelF, incosLabelF, inProdIDLabelF;
 	
 	public JLabel detPRDID_, detDESC_, detSTOCK_, detPRC_;
 	
-	public JLabel ttl;
+	public JLabel ttl, changeValue, orderLabel;
 	
 	
 	/**
@@ -102,17 +105,16 @@ public class TransactionPanel {
 	public void setAmoutDue() {
 		double amtDue = 0.00;
 		int rowCount = table.getRowCount();
-		System.out.println(rowCount);
 		
 		for (int i_ = 0; i_ < rowCount; i_++) {
 			if ((i_ == 0)) {
-				amtDue = Double.parseDouble(String.valueOf(table.getValueAt(i_, 4)));
+				amtDue = Double.parseDouble(String.valueOf(table.getValueAt(i_, 5)).replace(",", ""));
 			} else {
-				amtDue += Double.parseDouble(String.valueOf(table.getValueAt(i_, 4)));
+				amtDue += Double.parseDouble(String.valueOf(table.getValueAt(i_, 5)).replace(",", ""));
 			}
 		}
 		
-		this.ttl.setText(String.format("%.2f", amtDue));
+		this.ttl.setText(String.format("%,.2f", amtDue));
 		
 	}
 	
@@ -124,7 +126,7 @@ public class TransactionPanel {
 			if (rowCount > 0) {
 				int lastProdID = Integer.valueOf(String.valueOf(table.getValueAt(rowCount - 1, 0)));
 					if (id == lastProdID) {
-						int lastQuantity = (int) table.getValueAt(rowCount - 1, 2);
+						int lastQuantity = (int) table.getValueAt(rowCount - 1, 3);
 						quantity  += lastQuantity;
 						
 						if (quantity < 0) {
@@ -144,10 +146,12 @@ public class TransactionPanel {
 						tableModel.insertRow(rowCount  - 1, new Object[]{
 							String.format("%06d", prd.productID),
 							prd.name,
+							prd.unit,
 							quantity,
-							String.format("%.2f", prd.price),
-							String.format("%.2f",  ((float) quantity) * prd.price)
+							String.format("%,.2f", prd.price),
+							String.format("%,.2f",  ((float) quantity) * prd.price)
 						});
+						Order.addProductToOrder(Integer.parseInt(this.orderLabel.getText()), prd.productID, prd.name, prd.unit, quantity, prd.price);
 						table.setModel(tableModel);
 						this.setAmoutDue();
 						return;
@@ -169,9 +173,10 @@ public class TransactionPanel {
 						tableModel.addRow(new Object[]{
 							String.format("%06d", prd.productID),
 							prd.name,
+							prd.unit,
 							quantity,
-							String.format("%.2f", prd.price),
-							String.format("%.2f",  ((float) quantity) * prd.price)
+							String.format("%,.2f", prd.price),
+							String.format("%,.2f",  ((float) quantity) * prd.price)
 						});
 						table.setModel(tableModel);
 						this.setAmoutDue();
@@ -192,9 +197,10 @@ public class TransactionPanel {
 				tableModel.addRow(new Object[]{
 					String.format("%06d", prd.productID),
 					prd.name,
+					prd.unit,
 					quantity,
-					String.format("%.2f", prd.price),
-					String.format("%.2f",  ((float) quantity) * prd.price)
+					String.format("%,.2f", prd.price),
+					String.format("%,.2f",  ((float) quantity) * prd.price)
 				});
 				table.setModel(tableModel);
 						this.setAmoutDue();
@@ -202,15 +208,108 @@ public class TransactionPanel {
 		}
 	}
 	
+	public void generateReceipt() {
+		// int width = 782;
+		// int height = 593;
+		// BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        // Get the Graphics2D object from the BufferedImage
+        // Graphics2D g2d = (Graphics2D) image.createGraphics();
+		// g2d.setColor(Color.WHITE);
+        // g2d.fillRect(0, 0, width, height);
+
+        // Set the font to be used
+        // Font font = new Font("Arial", Font.BOLD, 24);
+        // g2d.setFont(font);
+
+        // Set the color to be used for drawing
+        // g2d.setColor(Color.BLACK);
+
+        // Draw the string
+        // String message = "Dave Housing & Construction Supplies";
+        // g2d.drawString(message, 172, 33);
+		
+		// font = new Font("Arial", Font.BOLD, 16);
+        // g2d.setFont(font);
+		
+		// message = "Cor. H. Abellana & Cubacub Rd., Cubacub, Mandaue City";
+        // g2d.drawString(message, 177, 73);
+		
+		// message = "Prop. - Elisea T. Cabatingan Tel.";
+        // g2d.drawString(message, 250, 91);
+
+		// message = "Nos.: 514-2900 / 511-5230 / 422-2915";
+        // g2d.drawString(message, 230, 110);
+
+        // Dispose of the Graphics2D object
+        // g2d.dispose();
+		
+		// File output = new File(System.getProperty("user.dir") + File.separator + "receipt.png");
+        // try {
+			// ImageIO.write(image, "png", output);
+		// } catch (Exception e) {e.printStackTrace();}
+	}
+	
+	public String processChange() {
+		String changeS_ = "";
+		if (!(Float.parseFloat(ttl.getText().replace(",", "")) > Float.parseFloat(incashLabelF.getText())) &&
+			!(incashLabelF.getText().equals("Enter Cash") || incashLabelF.getText().equals(""))) {
+			float change_ = Float.parseFloat(incashLabelF.getText()) - Float.parseFloat(ttl.getText().replace(",", ""));
+			changeS_ = String.format("%,.2f", change_);
+			changeValue.setText(changeS_);
+		} else {
+			changeValue.setText("0.00");
+		}
+		
+		return changeS_;
+	}
+	
 	public void processTransaction() {
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
 		int rowCount = model.getRowCount();
 		
 		if (rowCount <= 0) {
-			// no product error
+			JOptionPane.showMessageDialog(
+				null,
+				"No Products to be processed.",
+				"CSIMES - Process Products",
+				JOptionPane.INFORMATION_MESSAGE,
+				new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+			);
+			
+			SwingUtilities.invokeLater(() -> {inProdIDLabelF.requestFocusInWindow();});
 			
 			return;
 		}
+		
+		if (incashLabelF.getText().equals("Enter Cash") || incashLabelF.getText().equals("")) {
+			JOptionPane.showMessageDialog(
+				null,
+				"Please enter the cash amount.",
+				"CSIMES - Process Cash",
+				JOptionPane.INFORMATION_MESSAGE,
+				new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+			);
+			
+			SwingUtilities.invokeLater(() -> {incashLabelF.requestFocusInWindow();});
+			
+			return;
+		}
+		
+		if (Float.parseFloat(ttl.getText().replace(",", "")) > Float.parseFloat(incashLabelF.getText())) {
+			JOptionPane.showMessageDialog(
+				null,
+				"Insufficient cash amount.",
+				"CSIMES - Process Cash",
+				JOptionPane.INFORMATION_MESSAGE,
+				new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35))
+			);
+			incashLabelF.setText("");
+			SwingUtilities.invokeLater(() -> {incashLabelF.requestFocusInWindow();});
+			
+			return;
+		}
+		
 		
 		Runnable procRun = new Runnable() {
 			public void run() {
@@ -231,7 +330,7 @@ public class TransactionPanel {
 
 		for (int i = 0; i < rowCount; i++) {
 			int productId = Integer.valueOf(String.valueOf(table.getValueAt(i, 0)));
-			int quantity = (int) model.getValueAt(i, 2);
+			int quantity = (int) model.getValueAt(i, 3);
 			if (!decrementProductQuantity(productId, quantity)) {
 				Window[] windows = Window.getWindows();
 				for (Window window : windows) {
@@ -260,6 +359,9 @@ public class TransactionPanel {
 				return;
 			}
 		}
+		
+		this.processChange();
+		this.generateReceipt();
 
 		Window[] windows = Window.getWindows();
 		for (Window window : windows) {
@@ -281,7 +383,7 @@ public class TransactionPanel {
 		
 			JOptionPane.showOptionDialog(
 			null, 
-			"Transaction Completed!", "CSIMES - Transaction Status", 
+			"<html><p align='center'>Transaction Completed!</p><br><p align='center'>Change: " + this.processChange() + "</p><br></html>", "CSIMES - Transaction Status", 
 			JOptionPane.DEFAULT_OPTION, 
 			JOptionPane.PLAIN_MESSAGE,
 			new ImageIcon(ImageControl.resizeImage(new ImageIcon(ResourceControl.getResourceFile("icons/csimes_full_bg.png")).getImage(), 35, 35)),
@@ -289,12 +391,21 @@ public class TransactionPanel {
 			"OK"
 		);
 		
+		Order.finalOrder(Integer.parseInt(this.orderLabel.getText()), Float.parseFloat(this.ttl.getText().replace(",", "")), Float.parseFloat(this.incashLabelF.getText().replace(",", "")), Float.parseFloat(this.changeValue.getText().replace(",", "")));	
+		
 		model.setRowCount(0); // Clear the table for a new transaction
+		this.incashLabelF.setText("Enter Cash");
+		this.incosLabelF.setText("Unknown Customer");
+		this.setAmoutDue();
+		this.changeValue.setText("0.00");
+		Order.createOrder(orderLabel);
 	}
 	
 	public void voidTransaction() {
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
 		int rowCount = model.getRowCount();
+		this.maintf.setText("Unknown Customer");
+		SwingUtilities.invokeLater(() -> {maintf.requestFocusInWindow();});
 		model.setRowCount(0);
 		JOptionPane.showOptionDialog(
 			null, 
@@ -305,6 +416,8 @@ public class TransactionPanel {
 			new String[]{"OK"},
 			"OK"
 		);
+		Order.voidOrder(Integer.parseInt(this.orderLabel.getText()));
+		Order.createOrder(orderLabel);
 		this.setAmoutDue();
 	}
 	
@@ -374,20 +487,29 @@ public class TransactionPanel {
 		// Ari sugod
 		Rectangle mpr = this.panel.getBounds();
 		
-		this.table = new JTable();
+		this.table = new CTable(this.mainp, "transaction");
 
 		this.table.setModel(
-			new CTableModel(null, new String[]{"Product Code", "Item Description", "Quantity", "Unit Price", "Total Price"})
+			new CTableModel(null, new String[]{"Product ID", "Item Description", "Unit", "Quantity", "Unit Price", "Total Price"})
 		);
 		
 
 		JTableHeader header = this.table.getTableHeader();
-        header.setDefaultRenderer(new CHeaderRenderer());
+        header.setDefaultRenderer(new CHeaderRenderer("transaction"));
 		table.getTableHeader().setReorderingAllowed(false);
 
-		CTableRenderer renderer = new CTableRenderer();
-        renderer.setHorizontalAlignment(SwingConstants.CENTER);
+		CTableRenderer renderer = new CTableRenderer("transaction");
         table.setDefaultRenderer(Object.class, renderer);
+
+		this.table.setColumnWidths();
+		this.table.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getPropertyName().equals("model")) {
+					table.setColumnWidths();
+				}
+			}
+		});
 
 		this.spane = new JScrollPane(this.table);
 		this.spane.setName("tablespane2");
@@ -443,13 +565,38 @@ public class TransactionPanel {
 			(int) (((float) mpr.width) * 0.084),
 			(int) (((float) mpr.height) * 0.042)
 		);
+		
 		JLabel cosforLabel = this.mainp.createLabel(
 			false, 
 			this.panel,
 			"Customer:",
-			(int) (((float) cosflR.height) * 0.76),
+			(int) (((float) cosflR.height) * 0.68),
 			cosflR
 		);
+		
+		Rectangle incosLabelFR = new Rectangle(
+			(int) (((float) mpr.width) * 0.129),
+			(int) (((float) mpr.height) * 0.153),
+			(int) (((float) mpr.width) * 0.155),
+			(int) (((float) mpr.height) * 0.042)
+		);
+		
+		this.incosLabelF = this.mainp.createPanelTextField(
+			this,
+			this.panel, 
+			"costumer", 
+			incosLabelFR,
+			"Unknown Customer",
+			new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					JTextField tf = (JTextField)  e.getSource();
+					Order.addCustomerToOrder(Integer.parseInt(orderLabel.getText()), tf.getText().trim());
+					tf.transferFocus();
+				}
+			}
+		);
+		
+		this.maintf = incosLabelF;
 		
 		Rectangle dlR = new Rectangle(
 			(int) (((float) mpr.width) * 0.122),
@@ -464,6 +611,22 @@ public class TransactionPanel {
 			(int) (((float) dflR.height) * 0.68),
 			dlR
 		);
+		
+		Rectangle ordlR = new Rectangle(
+			(int) (((float) mpr.width) * 0.122),
+			(int) (((float) mpr.height) * 0.103),
+			(int) (((float) mpr.width) * 0.166),
+			(int) (((float) mpr.height) * 0.042)
+		);
+		this.orderLabel = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"",
+			(int) (((float) dflR.height) * 0.68),
+			ordlR
+		);
+		
+		Order.createOrder(orderLabel);
 		
 		Rectangle iR = new Rectangle(
 			(int) (((float) mpr.width) * 0.122),
@@ -496,7 +659,7 @@ public class TransactionPanel {
 		JLabel inProdIDLabel = this.mainp.createLabel(
 			false, 
 			inBg,
-			"Product Code:",
+			"Product ID:",
 			(int) (((float) inProdIDLabelR.height) * 0.55),
 			inProdIDLabelR
 		);
@@ -521,15 +684,18 @@ public class TransactionPanel {
 			(int) (((float) inBgR.width) * 0.572),
 			(int) (((float) inBgR.height) * 0.243)
 		);
-		JTextField inProdIDLabelF = this.mainp.createPanelTextField(
+		this.inProdIDLabelF = this.mainp.createPanelTextField(
 			this,
 			inBg, 
 			"ProductID", 
 			inProdIDLabelFR,
-			"Product Code",
-			() -> {}
+			"Product ID",
+			new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					((JTextField)  e.getSource()).transferFocus();
+				}
+			}
 		);
-		this.maintf = inProdIDLabelF;
 
 		Rectangle inQuanLabelFR = new Rectangle(
 			(int) (((float) inBgR.width) * 0.356),
@@ -549,7 +715,7 @@ public class TransactionPanel {
 				inQuanIDLabelF.setText("");
 				inProdIDLabelF.setText("");
 				 SwingUtilities.invokeLater(() -> {
-					maintf.requestFocusInWindow();
+					inProdIDLabelF.requestFocusInWindow();
 				});
 			}
 		});
@@ -593,7 +759,7 @@ public class TransactionPanel {
 		JLabel detProdIDL = this.mainp.createLabel(
 			false, 
 			detBg,
-			"Product Code:",
+			"Product ID:",
 			(int) (((float) detProdIDLR.height) * 0.69),
 			detProdIDLR
 		);
@@ -705,7 +871,7 @@ public class TransactionPanel {
 		JLabel ttlBg = this.mainp.createLabel(this.panel, "ttlbg", ttlBgR,  219, 219, 219);
 		
 		Rectangle ttlLabelR = new Rectangle(
-			(int) (((float) ttlBgR.width) * 0.589),
+			(int) (((float) ttlBgR.width) * 0.61),
 			(int) (((float) ttlBgR.height) * 0.13),
 			(int) (((float) ttlBgR.width) * 0.209),
 			(int) (((float) ttlBgR.height) * 0.750)
@@ -719,7 +885,7 @@ public class TransactionPanel {
 		);
 		
 		Rectangle ttlR = new Rectangle(
-			(int) (((float) ttlBgR.width) * 0.777),
+			(int) (((float) ttlBgR.width) * 0.81),
 			(int) (((float) ttlBgR.height) * 0.13),
 			(int) (((float) ttlBgR.width) * 0.209),
 			(int) (((float) ttlBgR.height) * 0.750)
@@ -728,8 +894,78 @@ public class TransactionPanel {
 			false, 
 			ttlBg,
 			"0.00",
-			(int) (((float) detstckLR.height) * 0.69),
+			(int) (((float) detstckLR.height) * 0.74),
 			ttlR
+		);
+		
+		Rectangle cashlR = new Rectangle(
+			(int) (((float) mpr.width) * 0.8),
+			(int) (((float) mpr.height) * 0.8),
+			(int) (((float) mpr.width) * 0.133),
+			(int) (((float) mpr.height) * 0.224)
+		);
+		JLabel cashLabel = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"Cash:",
+			(int) (((float) detstckLR.height) * 0.69),
+			cashlR
+		);
+		
+		Rectangle incashLabelFR = new Rectangle(
+			(int) (((float) mpr.width) * 0.86),
+			(int) (((float) mpr.height) * 0.89),
+			(int) (((float) mpr.width) * 0.086),
+			(int) (((float) mpr.height) * 0.042)
+		);
+		
+		this.incashLabelF = this.mainp.createPanelTextField(
+			this,
+			this.panel, 
+			"cash", 
+			incashLabelFR,
+			"Enter Cash",
+			new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					processTransaction();
+				}
+			}
+		);
+		this.incashLabelF.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+					e.consume();
+				}
+			}
+		});
+		
+		Rectangle changelR = new Rectangle(
+			(int) (((float) mpr.width) * 0.78),
+			(int) (((float) mpr.height) * 0.86),
+			(int) (((float) mpr.width) * 0.133),
+			(int) (((float) mpr.height) * 0.224)
+		);
+		JLabel changeLabel = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"Change:",
+			(int) (((float) detstckLR.height) * 0.69),
+			changelR
+		);
+		
+		Rectangle changeR = new Rectangle(
+			(int) (((float) mpr.width) * 0.86),
+			(int) (((float) mpr.height) * 0.946),
+			(int) (((float) ttlBgR.width) * 0.209),
+			(int) (((float) ttlBgR.height) * 0.750)
+		);
+		this.changeValue = this.mainp.createLabel(
+			false, 
+			this.panel,
+			"0.00",
+			(int) (((float) detstckLR.height) * 0.7),
+			changeR
 		);
 		
 		Runnable timeRunnable = new Runnable() {
@@ -767,6 +1003,17 @@ public class TransactionPanel {
 		this.panel.getActionMap().put("focusprodidAction", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				maintf.requestFocusInWindow();
+			}
+		});
+		
+		table.getInputMap().put(KeyStroke.getKeyStroke("alt W"), "modWPRDAction");
+		table.getActionMap().put("modWPRDAction", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				TableColumnModel columnModel = table.getColumnModel();
+				for (int i = 0; i < columnModel.getColumnCount(); i++) {
+					int columnWidth = columnModel.getColumn(i).getWidth();
+					System.out.println("Column " + i + " width: " + columnWidth + " PERCENT TO WIDTH: " + String.format("%.3f", ((float) columnWidth / mainp.rootWidth)));
+				}
 			}
 		});
 		

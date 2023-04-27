@@ -157,6 +157,7 @@ public class Initialize {
 	public void createCoreFiles() {
 		Initialize.accountStat.mkdirs();
 		Initialize.invenFile.mkdirs();
+		Initialize.orderFile.mkdirs();
 			
 		try {
 			Initialize.firstUser.createNewFile();

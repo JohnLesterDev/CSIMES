@@ -37,14 +37,13 @@ public class MAINPAGE {
 	public JLabel ham_;
 	
 	private JTable table;
-	public Sidebars mainPanel;
+	public Sidebars mainPanel, sidebar;
 	public static int maxID = 0;
 	
 	public HashMap<String,Component> components = new HashMap<String,Component>();
 	public HashMap<String,SidebarPanel> sidebarPanels = new HashMap<String,SidebarPanel>();
 	public static HashMap<Integer,Product> prds = new HashMap<Integer,Product>();
 	public HashMap<String,Sidebars> mainPanels = new HashMap<String,Sidebars>();
-	
 	
 	//Stock content interchanger
 	public JScrollPane spane;
@@ -707,13 +706,14 @@ public class MAINPAGE {
 		int btnW = (int) (((float) this.rootHeight) * 0.08);
 		int btnH = (int) (((float) this.rootHeight) * 0.05);
 		
-		Sidebars sidebar = this.sidebars(this.mainPanel);
+		this.sidebar = this.sidebars(this.mainPanel);
 		
-		InventoryPanel mp_one = new InventoryPanel(this);
-		this.table = mp_one.table;
+		DashboardPanel mp_zero = new DashboardPanel(this);
+		this.mainPanels.put("dashboardpanel", mp_zero.panel);
+		
+		this.mainPanel = mp_zero.panel;
 
-		this.spane = mp_one.spane;
-		this.mainPanel = mp_one.panel;
+		InventoryPanel mp_one = new InventoryPanel(this);
 		this.mainPanels.put("inventorypanel", mp_one.panel);
 		
 		TransactionPanel mp_two = new TransactionPanel(this);
@@ -1000,6 +1000,21 @@ public class MAINPAGE {
 		}
 	}
 	
+	public void switchMainPanel(String panelName, boolean err) {
+		for (Sidebars mpp : this.mainPanels.values()) {
+			if (mpp.getName().equals(panelName)) {
+				mpp.setVisible(true);
+				this.mainPanel = mpp;
+				if (this.sidebar.isShown) {
+					this.ham_.dispatchEvent(new MouseEvent(ham_, MouseEvent.MOUSE_PRESSED,
+						System.currentTimeMillis(), 0, 0, 0, 1, false, MouseEvent.BUTTON1));
+				}
+			} else {
+				mpp.setVisible(false);
+			}
+		}
+	}
+	
 	public Sidebars createMainPane(String name) {
 		int x = (int) (((float) this.rootWidth) * 0.117);
 		int y = (int) (((float) this.rootHeight) * 0.111);
@@ -1166,6 +1181,28 @@ public class MAINPAGE {
 		return label;
 	}
 	
+	public JLabel createLabel(boolean isText, RoundedLabel panel, String name, int fontSize, Rectangle labelRect) {
+		JLabel label = new JLabel(name);
+		
+		label.setBounds(labelRect);
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		if (isText == true) {
+			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.white);
+		} else {
+			label.setText(name);
+			label.setFont(new Font("Arial", Font.BOLD, fontSize));
+			label.setForeground(Color.black);
+		}
+		label.setName(name);
+		panel.add(label);
+		this.components.put(label.getName(), label);
+		
+		return label;
+	}
+	
 	
 	public JLabel createLabel(ImageIcon icon, String name, Rectangle rect, String iconType) {
 		JLabel label = new JLabel();
@@ -1193,7 +1230,17 @@ public class MAINPAGE {
 		return label;
 	}
 	
-	
+	public JLabel createLabel(RoundedLabel parent, ImageIcon icon, String name, Rectangle rect) {
+		JLabel label = new JLabel();
+		label.setName(name);
+		label.setIcon(icon);
+		label.setBounds(rect);
+		
+		parent.add(label);
+		
+		return label;
+	}
+
 	public JLabel createLabel(JPanel panel, ImageIcon icon, String name, Rectangle rect, String iconType) {
 		JLabel label = new JLabel();
 		label.setName(name);
@@ -1231,6 +1278,38 @@ public class MAINPAGE {
 		
 		label.setBackground(new Color(rgb[0], rgb[1], rgb[2]));
 		label.setName(name);
+		
+		sb.add(label);
+		this.components.put(label.getName(), label);
+		
+		return label;
+	}
+
+	public RoundedLabel createRoundedLabel(Sidebars sb, String name, Rectangle rect, int arcWidth, int arcHeight, Runnable runner, int... rgb) {
+		RoundedLabel label = new RoundedLabel("");
+		
+		label.setBounds(rect);
+		label.setOpaque(false);
+		label.setBorder(null);
+		
+		label.setBackground(new Color(rgb[0], rgb[1], rgb[2]));
+		label.setName(name);
+		
+		label.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                label.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                label.setBackground(null);
+            }
+            
+            public void mouseExited(MouseEvent e) {
+                label.setBorder(null);
+                label.setBackground(new Color(rgb[0], rgb[1], rgb[2]));
+            }
+			
+			public void mouseClicked(MouseEvent e) {
+                runner.run();
+            }
+        });
 		
 		sb.add(label);
 		this.components.put(label.getName(), label);
@@ -1339,9 +1418,10 @@ public class MAINPAGE {
 		return tf;
 	}
 	
-	public JTextField createPanelTextField(TransactionPanel tpl, JLabel sb, String name, Rectangle rect, String initial, Runnable runners) {
+	public JTextField createPanelTextField(TransactionPanel tpl, JLabel sb, String name, Rectangle rect, String initial, ActionListener runners) {
 		JTextField tf = new JTextField();
 		tf.setText(initial);
+		tf.setName(name);
 		tf.setForeground(Color.gray);
 		
 		tf.setBounds(rect);
@@ -1375,11 +1455,42 @@ public class MAINPAGE {
 					tf.setForeground(Color.gray);
 				}
 			});
-		tf.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				((JTextField) e.getSource()).transferFocus();
-			}
-		});
+		tf.addActionListener(runners);
+		
+		return tf;
+	}
+	
+	public JTextField createPanelTextField(TransactionPanel tpl, Sidebars sb, String name, Rectangle rect, String initial, ActionListener runners) {
+		JTextField tf = new JTextField();
+		tf.setText(initial);
+		tf.setForeground(Color.gray);
+		
+		tf.setBounds(rect);
+		tf.setName(name);
+		sb.add(tf);
+		((AbstractDocument)tf.getDocument()).putProperty("parent", tf);
+		((AbstractDocument)tf.getDocument()).addDocumentListener(new PRDIDListener(tpl));
+		
+		tf.addFocusListener(new FocusAdapter() {  // Our custom FocusAdapter (Further comments will be added soon)
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (tf.getText().trim().equals(initial)) {
+						tf.setText("");
+					}
+					
+					tf.setForeground(Color.BLACK);
+				}
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (tf.getText().trim().equals("")) {
+						tf.setText(initial);
+					}
+					
+					tf.setForeground(Color.gray);
+				}
+			});
+		tf.addActionListener(runners);
 		
 		return tf;
 	}

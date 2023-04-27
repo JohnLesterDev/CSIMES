@@ -70,7 +70,7 @@ If you encounter any issues during installation, please contact us under the [Co
 
 We would like to extend our heartfelt gratitude to the following individuals whose unwavering support, expertise, and time have been instrumental in the development of this inventory management system:
 
-- **Vitorillo, Aera Gabrielle** - the visionary leader of our team, who, as a UI Designer, helped ensure that our system's interface is both user-friendly and visually appealing. She also worked on the paper side of our software thesis.
+- **Vitorillo, Aera Gabrelle** - the visionary leader of our team, who, as a UI Designer, helped ensure that our system's interface is both user-friendly and visually appealing. She also worked on the paper side of our software thesis.
 - **Licayan, John Lester** - the intuitive programmer of our team and the one who setup the system, took charge of the development and maintenance of the system and this GitHub repository. Without his exceptional coding skills and dedication, this project would not have been possible.
 - **Macansantos, Axcelson** - a member of our team who contributed to the project as a UX Designer. He also worked on the paper side of our software thesis.
 - **Rodriguez, Paul Bradleigh** - a member of our team who served as our Software Tester. His meticulous testing and debugging efforts were essential to ensure that our system is functioning correctly. He also worked on the paper side of our software thesis.

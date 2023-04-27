@@ -23,6 +23,7 @@ public class SecurityControl implements Serializable {
 	
 	private Account acc;
 	private Product prod;
+	private Transaction trans;
 	
 	private String str = " A&BCDEF@!GHIJKLMNO#PQRSTUVWXYZabcdefghijklmn-opqrstuvwxyz0123456789,~`";
 	private char[] strArray = str.toCharArray();
@@ -160,6 +161,12 @@ public class SecurityControl implements Serializable {
 		
 	}
 	
+	public SecurityControl(Transaction trans) {
+		
+		this.trans = trans;
+		
+	}
+	
 	public SecurityControl(Product prod) {
 		
 		this.prod = prod;
@@ -178,6 +185,18 @@ public class SecurityControl implements Serializable {
 		this.prod.category = this.decryptString(this.prod.category).getResult();
 		
 		return this.prod;
+	}
+	
+	public Transaction encryptTransaction() {
+		this.trans.name = this.encryptString(this.trans.name).getResult();
+		
+		return this.trans;
+	}
+	
+	public Transaction decryptTransaction() {
+		this.trans.name = this.decryptString(this.trans.name).getResult();
+		
+		return this.trans;
 	}
 	
 	public Account encryptAccount() {
